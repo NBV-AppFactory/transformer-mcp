@@ -1,13 +1,13 @@
 <p align="center">
-  <img src="assets/icon.png" alt="Transformer" width="88">
+  <img src="assets/icon.png" alt="Transformer.gg" width="88">
 </p>
 
-# Transformer MCP server, CLI and docs
+# Transformer.gg MCP server, CLI and docs
 
-[Transformer](https://transformer.gg/?utm_source=github&utm_medium=referral&utm_campaign=public_repo&utm_content=readme) is an influencer marketplace for paid partnerships on X (Twitter), built so AI agents can run it. Brands paste their website, get X creators matched to what they sell, and send offers. Creators accept, post in their own words with X's Paid partnership label on, and are paid once the post is confirmed. People can use the web dashboard, or an agent can do the same through this MCP server, the CLI or the REST API.
+[Transformer.gg](https://transformer.gg/?utm_source=github&utm_medium=referral&utm_campaign=public_repo&utm_content=readme) is an influencer marketplace for paid partnerships on X (Twitter), built so AI agents can run it. Brands paste their website, get X creators matched to what they sell, and send offers. Creators accept, post in their own words with X's Paid partnership label on, and are paid once the post is confirmed. People can use the web dashboard, or an agent can do the same through this MCP server, the CLI or the REST API.
 
 - **MCP server:** `https://transformer.gg/mcp` (streamable HTTP, OAuth 2.1 or a `tf_live_` workspace key)
-- **Free, no key:** `get_influencer_value {handle}` at `https://transformer.gg/mcp/public` gives any X account's [influencer value](https://transformer.gg/value?utm_source=github&utm_medium=referral&utm_campaign=public_repo&utm_content=readme), our estimate of what one sponsored post on that account is worth
+- **Free, no key:** `get_influencer_value {handle}` at `https://transformer.gg/mcp/public` gives any X account's [influencer value](https://transformer.gg/value?utm_source=github&utm_medium=referral&utm_campaign=public_repo&utm_content=readme), our estimate of the value of one sponsored post on that account
 - **MCP Registry name:** `gg.transformer/transformer` ([server.json](server.json))
 - **Pricing:** no subscription. Brands set the price of each offer, creators keep 80% and Transformer keeps 20% ([pricing](https://transformer.gg/pricing?utm_source=github&utm_medium=referral&utm_campaign=public_repo&utm_content=readme))
 
@@ -79,4 +79,4 @@ The live docs are at [transformer.gg/docs](https://transformer.gg/docs?utm_sourc
 
 ---
 
-Transformer is run by North Bay Opco I, Inc., a North Bay Ventures company. Questions go to support@transformer.gg. This repository is a published copy, and the product code lives elsewhere. Please report problems in [Issues](../../issues).
+Transformer.gg is run by North Bay Opco I, Inc., a North Bay Ventures company. Questions go to support@transformer.gg. This repository is a published copy, and the product code lives elsewhere. Please report problems in [Issues](../../issues).
