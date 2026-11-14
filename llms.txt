@@ -1,0 +1,117 @@
+# Transformer
+
+> Transformer (transformer.gg) is the agentic influencer marketplace. Real creators, paid on confirmed posts. Run it from the dashboard or from your agent. Paid partnerships on X (Twitter): a brand pastes its website, gets suggested X creators matched to it, and sends each an offer with the price and ask prefilled; creators accept, post in their own words with X's Paid partnership label on, submit the post URL (with a screenshot if they like), and get paid once the Transformer team confirms the post. Every offer has a tracked link, so clicks and sales are attributed to the creator who drove them. Brands and creators can work in the web dashboard or hand the job to an agent through the MCP server, the CLI or the REST API.
+
+Key facts:
+
+- Two sides: brands (and the agents running their growth) and creators (and the agents managing their deals). Either side can be a person or an agent; nothing is dashboard-only.
+- Platform: X (Twitter) today. More networks later.
+- Pricing: no subscription, seats or minimums. Brands set the payout per offer. Creators keep 80% of the payout and of any sales commission; Transformer keeps 20%. Example: a $250 X post pays the creator $200.
+- Brand flow: website → suggested creators (matched from the brand's site; no brief to write) → offer (price and ask prefilled; good for 3, 7, 10 or 14 days) → send (one or several creators at once; sending is free) → the creator accepts (or counters) → the brand's saved card is charged automatically at that moment (balance first; a 72-hour pay link only if that charge fails) → the creator posts → the Transformer team confirms the post → the creator's share is released. Offers are binding: if the creator accepts in time, the card is charged. Money from a declined or expired offer goes back to the brand's balance for the next offer.
+- Offers come from the brand: a brand connects one X account (its company account or the sender's own) once, and every send needs it. Creators not on Transformer get the offer as a DM from that account (one-to-one, only if their profile invites business contact and they accept its DMs), and by email from Transformer on the brand's behalf where we have an address. Sending without it returns 409 brand_x_required with a connect link.
+- A card on file to send: a brand adds a card once (Stripe). Sending is free; when a creator accepts, the saved card is charged automatically (the brand's balance first). If that charge fails, the brand has 72 hours to pay by link (reminders at 24 and 60 hours); unpaid, the offer is cancelled and the creator is told. The creator posts only after the brand has paid, within 7 days of the payment.
+- Payment is held when the brand pays for an offer and released after the Transformer team confirms the post: a person reviews the creator's evidence (the post URL, an optional screenshot of the Paid partnership label, and automatic checks that it's live, from the right account, with the tracked link and the label on) and approves or rejects it with a reason; a rejected post can be fixed and resubmitted before the post-by date. The payment goes back to the brand's balance if the creator declines, the offer expires, or the brand cancels before acceptance; after the brand has paid either side can open a dispute, which freezes the payment until an admin releases or refunds it. When the post is confirmed, the creator's 80% goes into their balance; creators request a payout (from $10) and are paid by PayPal or USDC (Solana or Base), usually within 3 business days.
+- Creators sign in with X read-only. Transformer never posts on a creator's behalf, never reads DMs and never stores long-lived X tokens.
+- An ask, not a script: creators write their own posts.
+- Attribution: each accepted offer gets a tracked link (https://transformer.gg/r/<code>) that appends a tf_click id to the brand's URL. The brand reports sales with POST /api/v1/conversions and commission is calculated per sale. Per-creator landing pages and a visit pixel are supported.
+- Agent access: MCP server at https://transformer.gg/mcp (streamable HTTP), REST API at https://transformer.gg/api/v1, CLI installed with `curl -fsSL https://transformer.gg/install | sh`. MCP clients that support sign-in (Claude, Claude Code, ChatGPT, Cursor, …) just add the URL and sign in with X, picking the workspace the agent acts for (OAuth 2.1, revocable in Settings → Agents). Headless agents, the REST API and the CLI use a workspace API key (tf_live_…) as a bearer token; one key or connection acts for exactly one brand or creator workspace.
+- Operated by North Bay Opco I, Inc. (a Delaware corporation), Miami, Florida. Support: support@transformer.gg.
+- Founded by Jon Oringer, who founded Shutterstock and took it public. About: https://transformer.gg/about
+
+## Influencer values
+
+- [Influencer values by creator](https://transformer.gg/value/creators): Transformer's estimate for one sponsored X post (its influencer value) for creators in tech, AI and the creator economy, shown as a range (from follower count on a published curve, adjusted gently for views and engagement). Not offers, and not what brands have paid. Creators can remove their page.
+- [Index (Markdown)](https://transformer.gg/value/index.md) and [index (JSON)](https://transformer.gg/value/index.json): every page with its value range; each page also has a Markdown version at https://transformer.gg/value/<handle>.md.
+- [Check any X handle](https://transformer.gg/value): enter a handle to see its influencer value, Transformer's estimate of one sponsored X post, shown as a range.
+- Free MCP tool: get_influencer_value {handle} at https://transformer.gg/mcp/public needs no API key (rate-limited); signed-in agents have it on https://transformer.gg/mcp too. It returns the same range, usual price and method line as the page, with a link.
+
+## Docs
+
+- [Developer docs](https://transformer.gg/docs): quickstart, authentication, concepts, MCP tools, CLI and REST reference (also as Markdown, below)
+- [Quickstart](https://transformer.gg/docs/quickstart.md): account, workspace, API key, authentication, connect an agent
+- [Concepts](https://transformer.gg/docs/concepts.md): workspaces, offer lifecycle, deliverables, tracked links, conversions, payments
+- [MCP server and CLI](https://transformer.gg/docs/mcp.md): tools for searching creators, sending and accepting offers, submitting posts and reporting sales
+- [REST reference](https://transformer.gg/docs/rest.md): endpoints under /api/v1
+- [Conversion tracking](https://transformer.gg/docs/tracking.md): tf_click, server-side conversions, landing pages, pixel
+
+## Product
+
+- [Home](https://transformer.gg/): what Transformer is, how it works for brands and creators, pricing
+- [Pricing](https://transformer.gg/pricing.md): 80% to creators, 20% platform fee, pay per offer, pricing FAQ
+- [For creators](https://transformer.gg/#creators): get paid to post on X
+
+## Articles
+
+- [Blog](https://transformer.gg/blog): influencer marketing, explained (RSS: https://transformer.gg/blog/rss.xml; every article also has a .md version)
+- [How does a small account get visibility on X? What the algorithm rewards, and what to do this week](https://transformer.gg/blog/how-to-get-visibility-on-x-small-account.md): A small account grows on X by being useful in conversations that are already getting attention, posting…
+- [What to post on X when you have few followers: 8 post types that get replies](https://transformer.gg/blog/what-to-post-on-x-with-few-followers.md): With few followers, post things that are useful on their own and invite a reply
+- [How often should you post on X, and when? Frequency and best times from 2026 data](https://transformer.gg/blog/how-often-to-post-on-x-and-best-times.md): Published guidance puts X at about 2–5 posts a day, and consistency matters more than volume
+- [How to use X analytics to grow: where to find it, what each metric means, and what to watch](https://transformer.gg/blog/how-to-use-x-analytics-to-grow.md): X analytics shows how many people saw your posts and what they did next
+- [How to find your best posts on X and do more of what works: a 20-minute weekly routine](https://transformer.gg/blog/how-to-find-your-best-posts-on-x.md): Sort your X posts by engagement rate, not likes, and look for patterns in format, topic, timing and first line
+- [How to read your X audience and find your best posting times in X analytics](https://transformer.gg/blog/how-to-read-your-x-audience-and-best-times.md): X analytics' Audience tab shows when the people who engage with you are active, how many are non-followers…
+- [How to turn your X analytics into brand deals: the stats brands ask for, and how engagement sets your price](https://transformer.gg/blog/x-analytics-for-brand-deals.md): Brands judge a creator on reach, engagement and audience
+- [How does a creator marketplace work? Matching, offers, payment, fees, and a brand's first steps](https://transformer.gg/blog/how-does-a-creator-marketplace-work.md): A creator marketplace is a platform where creators sign up for paid work and brands buy posts from them…
+- [Sponsored posts on X: the 2026 data from 309,000 accounts and 23,000 paid-partnership posts](https://transformer.gg/blog/sponsored-posts-on-x-2026-data.md): How many X creators do sponsored posts, how their reach and engagement change with size, and how fast X's…
+- [How much do influencer marketing platforms cost? Pricing models, UGC platforms, and CPM vs flat fee](https://transformer.gg/blog/influencer-marketing-platform-cost.md): Influencer marketing platforms charge by monthly subscription, by a percentage marketplace fee, by agency…
+- [How accurate are influencer rate calculators? What they measure, what they miss, and how to use one](https://transformer.gg/blog/how-accurate-are-influencer-rate-calculators.md): An influencer rate calculator gives a starting range, not a price, and it's only as good as its inputs
+- [What is a brand ambassador? How they're paid, and how they differ from influencers and affiliates](https://transformer.gg/blog/what-is-a-brand-ambassador.md): A brand ambassador represents one brand over months or years, not a single campaign
+- [What is a good engagement rate? Benchmarks for Instagram, TikTok and X by follower count](https://transformer.gg/blog/what-is-a-good-engagement-rate.md): Engagement rate is interactions divided by followers (or by views)
+- [Which influencer niches pay the most? CPM by niche, and the most common niches](https://transformer.gg/blog/influencer-niches-that-pay-most.md): Finance, crypto, AI, software and B2B pay creators the most per view
+- [How to choose a creator marketing agency: questions to ask, pricing models, and when to go direct](https://transformer.gg/blog/how-to-choose-a-creator-marketing-agency.md): Pick a creator marketing agency by your goal, budget and niche
+- [How do brand deals work? From the first offer to getting paid](https://transformer.gg/blog/how-brand-deals-work.md): A brand deal is a paid agreement for a creator to post about a brand
+- [What is a sponsored post? Definition, labels and what's in a typical deal](https://transformer.gg/blog/what-is-a-sponsored-post.md): A sponsored post is a post a brand pays a creator to publish about it, in the creator's own voice, clearly…
+- [What is creator marketing? Creator vs influencer, and how it differs from influencer marketing and UGC](https://transformer.gg/blog/what-is-creator-marketing.md): Creator marketing means working with people who make content, so they tell their audience about your…
+- [Do you need a contract for influencer deals? What to put in writing for a sponsored post](https://transformer.gg/blog/do-you-need-a-contract-for-influencer-deals.md): Every paid influencer deal should have written terms, but they can be short
+- [How to get free products from brands (and when to ask for payment instead)](https://transformer.gg/blog/how-to-get-free-products-from-brands.md): Creators get free products through brand gifting and seeding programs, creator platforms, and short…
+- [How do brands pay influencers? Payment models, methods and when to pay (with X paid partnerships)](https://transformer.gg/blog/how-do-brands-pay-influencers.md): Most brands pay influencers a flat fee per post, sometimes plus a commission on sales, gifted product or a…
+- [Influencer platforms that don't need your X password or DMs: how to check what an app can do](https://transformer.gg/blog/influencer-platforms-without-x-password.md): A safe creator platform never asks for your X password
+- [A CLI for influencer marketing: run creator campaigns from the terminal](https://transformer.gg/blog/influencer-marketing-cli.md): Transformer's CLI runs paid partnerships on X from the command line
+- [Collabstr alternatives: Transformer vs Collabstr (2026 pricing and fees)](https://transformer.gg/blog/transformer-vs-collabstr.md): Collabstr is a marketplace to hire Instagram, TikTok, YouTube and UGC creators, with a free plan…
+- [CreatorIQ pricing in 2026: what it costs and what drives the price](https://transformer.gg/blog/creatoriq-pricing.md): CreatorIQ doesn't publish prices; you request pricing on a call
+- [How to choose an influencer marketing platform and social network: types, costs, free options](https://transformer.gg/blog/how-to-choose-an-influencer-marketing-platform.md): Influencer marketing platforms range from free plans and pay-per-post marketplaces to $30,000+ a year…
+- [How to find and vet influencers that fit your product](https://transformer.gg/blog/how-to-find-and-vet-influencers.md): Find influencers your customers already follow, then vet them on audience fit, real engagement, content…
+- [UGC creators in 2026: what UGC and UGC platforms cost, how creators find deals and get paid, and how to start](https://transformer.gg/blog/ugc-creator-guide.md): A UGC creator makes photos and videos that brands post on their own channels and ads
+- [How do content creators make money? Getting paid to promote brands on X](https://transformer.gg/blog/how-creators-make-money-on-x.md): Creators earn from platform payouts, brand deals, affiliate links, products and subscriptions
+- [How to run an influencer campaign on X, step by step](https://transformer.gg/blog/how-to-run-an-influencer-campaign-on-x.md): Set one goal, define who you need to reach, shortlist creators those people follow, write a short ask, set…
+- [Which platform pays creators the most? Pay per 1,000 and per million views (2026)](https://transformer.gg/blog/do-creators-get-paid-per-1000-views.md): YouTube long-form pays most per view: about $2–$12 per 1,000 views ($2,000–$12,000 per million)
+- [How much should you budget for your first influencer campaign?](https://transformer.gg/blog/influencer-marketing-budget-first-campaign.md): Build the budget from the bottom up
+- [Paid partnership rules on X: the Paid partnership label and what the FTC requires](https://transformer.gg/blog/ad-disclosure-rules-on-x.md): Paying creators for posts on X is allowed if the post is disclosed
+- [How much should you pay an influencer? A pricing guide for brands](https://transformer.gg/blog/how-much-to-pay-an-influencer.md): Start from audience size, then adjust for niche, engagement, format, usage rights and exclusivity
+- [How to make an influencer rate card for X (and negotiate your first brand deal)](https://transformer.gg/blog/influencer-rate-card-x.md): A rate card lists your prices for a post, a thread and a video, plus add-ons like usage rights and what's…
+- [Influencer usage rights explained: ownership, paid ads, whitelisting and what to charge](https://transformer.gg/blog/influencer-usage-rights.md): Paying for a sponsored post doesn't make the brand the owner of the content
+- [Is this sponsorship offer legit? How creators spot fake brand deals](https://transformer.gg/blog/is-this-sponsorship-offer-legit.md): Fake brand deals ask you to pay first, buy the product, hand over bank details, or move fast before you can…
+- [How to reach out to influencers: message templates that get replies](https://transformer.gg/blog/how-to-reach-out-to-influencers.md): Lead with why you picked them, say what you're offering and what it pays, and make yes easy
+- [Nano and micro-influencers on X: what they are, nano vs micro vs macro, and what a good CPM is](https://transformer.gg/blog/micro-influencers-on-x.md): A nano-influencer usually has about 1,000–10,000 followers; a micro-influencer about 10,000–100,000
+- [How many followers do you need to make money? Brand deals and platform payouts](https://transformer.gg/blog/how-many-followers-for-brand-deals.md): Brand deals have no hard minimum: nano creators with 1,000–10,000 followers get paid
+- [Best influencer marketing platforms for developer tools and B2B SaaS (2026)](https://transformer.gg/blog/best-influencer-platforms-for-developer-tools.md): Which creator-marketing platforms fit developer tools, AI startups and B2B SaaS, grouped by job
+- [How sponsorship payouts work on Transformer: 80% to you, PayPal or USDC, $10 minimum and tax forms](https://transformer.gg/blog/how-sponsorship-payouts-work.md): For creators: what you earn (80%), when it's credited…
+- [How Transformer works: payment protection, the 80/20 split and confirmed posts](https://transformer.gg/blog/how-transformer-payment-protection-works.md): Brands paste their website, pick suggested X creators and send prefilled offers for free
+- [How to run an influencer campaign from an AI agent (MCP)](https://transformer.gg/blog/run-influencer-campaign-from-ai-agent-mcp.md): A step-by-step guide to running paid partnerships on X from Claude, Codex or any MCP client
+- [How much do influencers charge per post? Rates by follower count, YouTube sponsorship rates, and what we pay on X](https://transformer.gg/blog/sponsored-post-rates-by-follower-count.md): Influencer rates scale with followers and platform
+- [Transformer vs GRIN: which influencer platform fits your team?](https://transformer.gg/blog/transformer-vs-grin.md): GRIN is a creator-management suite for e-commerce brands, with plans from free to $1,500/month plus a fee…
+- [How to get paid to post about developer tools on X](https://transformer.gg/blog/get-paid-to-post-about-dev-tools-on-x.md): A guide for developers and tech creators on X
+- [How to pay creators per confirmed post: the payment is held until the post is live](https://transformer.gg/blog/pay-creators-per-confirmed-post.md): Pay-per-confirmed-post means the creator's payment is held until their post is confirmed live, from their…
+- [Transformer vs Aspire: influencer platforms compared for startups](https://transformer.gg/blog/transformer-vs-aspire.md): Aspire is a demo-led influencer platform sold on annual contracts…
+- [The developer influencer marketing playbook: how dev tools get distribution from creators](https://transformer.gg/blog/developer-influencer-marketing-playbook.md): A practical playbook for developer tools and AI startups
+- [Transformer vs CreatorIQ: enterprise creator platform or pay-per-post marketplace?](https://transformer.gg/blog/transformer-vs-creatoriq.md): CreatorIQ is an enterprise creator-marketing platform for large brands, sold on annual contracts…
+- [Transformer vs Upfluence: modular influencer suite or pay-per-post on X?](https://transformer.gg/blog/transformer-vs-upfluence.md): Upfluence sells modular influencer software on 12-month contracts and has an MCP server in beta for search…
+- [Transformer vs Passionfroot: B2B creator sponsorship platforms compared](https://transformer.gg/blog/transformer-vs-passionfroot.md): Passionfroot is a B2B creator marketplace across LinkedIn, newsletters, YouTube and podcasts…
+- [Transformer vs Modash: influencer discovery tool or influencer marketplace?](https://transformer.gg/blog/transformer-vs-modash.md): Modash is an influencer discovery and management tool for Instagram, TikTok and YouTube, from $199/month…
+- [Transformer vs Influencity: influencer software or pay-per-post marketplace?](https://transformer.gg/blog/transformer-vs-influencity.md): Influencity is influencer marketing software (discovery, CRM, campaigns, payments) with a 7-day trial and…
+- [GRIN, Aspire and CreatorIQ alternatives for startups](https://transformer.gg/blog/grin-aspire-creatoriq-alternatives-for-startups.md): GRIN, Aspire and CreatorIQ are built for established consumer brands, with subscriptions or annual contracts
+- [What is influencer marketing, how does it work, and why it matters more than ever](https://transformer.gg/blog/why-influencer-marketing-matters.md): Influencer marketing is paying creators to tell their audience about your product
+- [Shipping code is easy now. Distribution is the hard part.](https://transformer.gg/blog/distribution-is-the-hard-part.md): AI coding tools made building software cheap and fast, so the bottleneck has moved to getting it in front…
+- [People trust people, not ads: the case for creator marketing](https://transformer.gg/blog/people-trust-people-not-ads.md): Recommendations from people we know beat every form of advertising on trust
+- [Product discovery moved to creators and AI answers](https://transformer.gg/blog/discovery-moved-to-creators-and-ai-answers.md): Buyers increasingly find products in social feeds and AI chat answers instead of search results
+- [How to measure influencer marketing ROI: tracked links, click ids and cost per sign-up](https://transformer.gg/blog/influencer-marketing-is-measurable.md): How to measure creator marketing
+- [Why smaller creators often outperform big influencers](https://transformer.gg/blog/why-micro-creators-outperform.md): Engagement rates tend to fall as follower counts rise
+- [Influencer marketing vs paid ads: when each one wins](https://transformer.gg/blog/influencer-marketing-vs-paid-ads.md): Paid ads buy reach on demand; creators bring trust and a targeted, engaged audience
+- [The creator economy by the numbers: how big is influencer marketing?](https://transformer.gg/blog/creator-economy-by-the-numbers.md): Global influencer marketing is estimated at about $32.55 billion in 2025, US spend passed $10 billion, and…
+- [Influencer marketing for startups: why X is the place to start](https://transformer.gg/blog/influencer-marketing-for-startups-on-x.md): For startups, developer tools and B2B products, X is where builders, founders and early adopters talk in…
+- [AI agents will run influencer marketing. Here's why that matters.](https://transformer.gg/blog/ai-agents-will-run-influencer-marketing.md): Most of the work in influencer marketing, from finding creators to checking posts and reporting sales, is…
+
+## Optional
+
+- [Terms of Service](https://transformer.gg/terms)
+- [Privacy Policy](https://transformer.gg/privacy)
+- [Full version of this file](https://transformer.gg/llms-full.txt): adds the offer lifecycle, MCP tool list, API examples, FAQ and the full developer docs as Markdown
