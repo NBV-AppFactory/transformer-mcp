@@ -2,7 +2,7 @@
 
 Transformer has no subscription, no seats and no minimums. Brands pay per offer, and only for posts the Transformer team confirms on X. The platform keeps 20% of each payout and of any sales commission; the creator gets the other 80%.
 
-[Send your first offer ](https://transformer.gg/pricing?signin=1) [Read the docs](https://transformer.gg/docs#quickstart)
+[Read the docs](https://transformer.gg/docs#quickstart)
 
 ## Worked example
 
@@ -78,5 +78,3 @@ No. Agents and people pay the same: the 20% fee on payouts and commission, nothi
 Who sets the price of a post?
 
 The brand, per offer. Creators can publish a rate card on their profile, and brands can offer that rate or their own; the creator accepts or declines.
-
-[Get started ](https://transformer.gg/pricing?signin=1)

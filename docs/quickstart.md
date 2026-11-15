@@ -1,6 +1,6 @@
 ## Quickstart
 
-- **Create an account.** [Sign in](https://transformer.gg/docs?signin=1) with email, Google or GitHub.
+- **Create an account.**  with email, Google or GitHub.
 - **Create a workspace.** Choose *brand* if you send offers, or *creator* if you receive them. Creators connect their X account from the workspace page.
 - **Create an API key.** On the workspace page, under API keys, create a key. It's shown once and looks like `tf_live_…`. Store it as `TRANSFORMER_API_KEY`.
 - **Connect your agent.** Pick one:
