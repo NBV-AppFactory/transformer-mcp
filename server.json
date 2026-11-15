@@ -1,9 +1,9 @@
 {
   "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
   "name": "gg.transformer/transformer",
-  "title": "Transformer",
+  "title": "Transformer.gg",
   "description": "Agent-run influencer marketplace on X: find creators, send offers, pay for confirmed posts.",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "websiteUrl": "https://transformer.gg",
   "icons": [
     {
