@@ -16,7 +16,7 @@ Key facts:
 - Attribution: each accepted offer gets a tracked link (https://transformer.gg/r/<code>) that appends a tf_click id to the brand's URL. The brand reports sales with POST /api/v1/conversions and commission is calculated per sale. Per-creator landing pages and a visit pixel are supported.
 - Agent access: MCP server at https://transformer.gg/mcp (streamable HTTP), REST API at https://transformer.gg/api/v1, CLI installed with `curl -fsSL https://transformer.gg/install | sh`. MCP clients that support sign-in (Claude, Claude Code, ChatGPT, Cursor, …) just add the URL and sign in with X, picking the workspace the agent acts for (OAuth 2.1, revocable in Settings → Agents). Headless agents, the REST API and the CLI use a workspace API key (tf_live_…) as a bearer token; one key or connection acts for exactly one brand or creator workspace.
 - Operated by North Bay Opco I, Inc. (a Delaware corporation), Miami, Florida. Support: support@transformer.gg.
-- Founded by Jon Oringer, who founded Shutterstock and took it public. About: https://transformer.gg/about
+- Transformer.gg is part of North Bay Ventures. Founded by Jon Oringer, who founded Shutterstock and took it public. About: https://transformer.gg/about
 
 ## Influencer values
 
