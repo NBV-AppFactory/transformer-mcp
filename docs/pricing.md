@@ -1,12 +1,14 @@
 # You set the price. Creators keep 80%.
 
-Transformer has no subscription, no seats and no minimums. Brands pay per offer, and only for posts the Transformer team confirms on X. The platform keeps 20% of each payout and of any sales commission; the creator gets the other 80%.
+Free to join and free to send offers. No subscription and no minimum offer. Transformer.gg keeps 20% of each payout; creators keep 80%.
+
+Brands pay per offer, only when a creator accepts, and the payout is released once the Transformer team confirms the post on X. The same split applies to any sales commission.
 
 [Read the docs](https://transformer.gg/docs#quickstart)
 
-## Worked example
+## Example: one X post at $250
 
-\# one X post at $250, plus 10% of tracked sales
+\# the brand sets the price; this one also pays 10% of tracked sales
 
 Brand pays for one X post $250.00
 
