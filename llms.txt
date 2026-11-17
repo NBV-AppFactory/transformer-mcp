@@ -8,6 +8,7 @@ Key facts:
 - Platform: X (Twitter) today. More networks later.
 - Pricing: no subscription, seats or minimums. Brands set the payout per offer. Creators keep 80% of the payout and of any sales commission; Transformer keeps 20%. Example: a $250 X post pays the creator $200.
 - Creators never pay to join or to receive offers; Transformer's 20% comes out of the brand's payment.
+- Every sponsored post on Transformer carries X's Paid partnership label, X's own disclosure for paid posts.
 - Brand flow: website → suggested creators (matched from the brand's site; no brief to write) → offer (price and ask prefilled; good for 3, 7, 10 or 14 days) → send (one or several creators at once; sending is free) → the creator accepts (or counters) → the brand's saved card is charged automatically at that moment (balance first; a 72-hour pay link only if that charge fails) → the creator posts → the Transformer team confirms the post → the creator's share is released. Offers are binding: if the creator accepts in time, the card is charged. Money from a declined or expired offer goes back to the brand's balance for the next offer.
 - Offers come from the brand: a brand connects one X account (its company account or the sender's own) once, and every send needs it. Creators not on Transformer get the offer as a DM from that account (one-to-one, only if their profile invites business contact and they accept its DMs), and by email from Transformer on the brand's behalf where we have an address. Sending without it returns 409 brand_x_required with a connect link.
 - A card on file to send: a brand adds a card once (Stripe). Sending is free; when a creator accepts, the saved card is charged automatically (the brand's balance first). If that charge fails, the brand has 72 hours to pay by link (reminders at 24 and 60 hours); unpaid, the offer is cancelled and the creator is told. The creator posts only after the brand has paid, within 7 days of the payment.
@@ -33,7 +34,7 @@ Key facts:
 - [Concepts](https://transformer.gg/docs/concepts.md): workspaces, offer lifecycle, deliverables, tracked links, conversions, payments
 - [MCP server and CLI](https://transformer.gg/docs/mcp.md): tools for searching creators, sending and accepting offers, submitting posts and reporting sales
 - [REST reference](https://transformer.gg/docs/rest.md): endpoints under /api/v1
-- [Conversion tracking](https://transformer.gg/docs/tracking.md): tf_click, server-side conversions, landing pages, pixel
+- [Conversion tracking](https://transformer.gg/docs/tracking.md): tf_click, server-side conversions, landing pages, the Transformer pixel (https://transformer.gg/t.js: PageView, SignUp, Lead, AddToCart, Purchase) and the Events API (POST /api/v1/events)
 
 ## Product
 
