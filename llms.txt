@@ -27,6 +27,17 @@ Key facts:
 - [Check any X handle](https://transformer.gg/value): enter a handle to see its influencer value, Transformer's estimate of one sponsored X post, shown as a range.
 - Free MCP tool: get_influencer_value {handle} at https://transformer.gg/mcp/public needs no API key (rate-limited); signed-in agents have it on https://transformer.gg/mcp too. It returns the same range, usual price and method line as the page, with a link.
 
+## For brands
+
+- Who it's for: brands that want sponsored posts from X creators in tech, AI, dev tools, SaaS, crypto and finance, and the agents running their growth. Free to join and to send offers; no subscription and no minimum offer; Transformer keeps 20% of each payout.
+- Start here: [For brands](https://transformer.gg/brands) shows how many X creators in our index meet our bar, by niche (live counts, also in [Markdown](https://transformer.gg/brands.md)), example prices per post, and how a deal works.
+- Who the creators are: X accounts in our index with real followings (1,000+ followers and at least 3 followers for each account they follow), recent posts and good engagement for their size. Most haven't joined Transformer yet. An offer reaches them as a DM from the brand's X account or by email; today about 4 in 10 of them can receive one, and that share grows as we find more contact details.
+- What a post costs: each creator has an influencer value, our estimate for one sponsored post, shown as a range on https://transformer.gg/value/<handle>. A creator's own price replaces it. Rates by size: [Sponsored post rates by follower count](https://transformer.gg/blog/sponsored-post-rates-by-follower-count) and [How much to pay an influencer](https://transformer.gg/blog/how-much-to-pay-an-influencer).
+- Who already sponsors X creators: [Which brands sponsor X creators](https://transformer.gg/blog/which-brands-sponsor-x-creators), updated monthly from disclosed paid-partnership posts.
+- Browse creators by niche: [Influencer values by creator](https://transformer.gg/value/creators).
+- First campaign: [How to run an influencer campaign on X](https://transformer.gg/blog/how-to-run-an-influencer-campaign-on-x).
+
+
 ## Docs
 
 - [Developer docs](https://transformer.gg/docs): quickstart, authentication, concepts, MCP tools, CLI and REST reference (also as Markdown, below)
@@ -46,6 +57,8 @@ Key facts:
 ## Articles
 
 - [Blog](https://transformer.gg/blog): influencer marketing, explained (RSS: https://transformer.gg/blog/rss.xml; every article also has a .md version)
+- [How creators vet brand deals: does this brand fit your niche?](https://transformer.gg/blog/how-creators-vet-brand-deals.md): A brand fits your niche when your followers would actually buy what it sells and you'd use it yourself
+- [Why creators ignore brand collaboration requests (and how to get a reply)](https://transformer.gg/blog/why-creators-ignore-brand-requests.md): Creators ignore brand requests that don't name a price
 - [Transformer.gg is live on Product Hunt](https://transformer.gg/blog/product-hunt-launch.md): Transformer.gg launched on Product Hunt on Sunday, November 15, 2026, as "The agentic influencer…
 - [Which brands sponsor X creators (November 2026)](https://transformer.gg/blog/which-brands-sponsor-x-creators.md): In the last 90 days, 221 brands sponsored 736 X creators in 1,368 disclosed posts, led by AI, crypto and…
 - [How does a small account get visibility on X? What the algorithm rewards, and what to do this week](https://transformer.gg/blog/how-to-get-visibility-on-x-small-account.md): A small account grows on X by being useful in conversations that are already getting attention, posting…
