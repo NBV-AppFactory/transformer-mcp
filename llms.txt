@@ -57,6 +57,7 @@ Key facts:
 ## Articles
 
 - [Blog](https://transformer.gg/blog): influencer marketing, explained (RSS: https://transformer.gg/blog/rss.xml; every article also has a .md version)
+- [Who is an influencer's audience? How brands read it before they pay](https://transformer.gg/blog/how-to-read-an-influencers-audience.md): An influencer's audience is the people who actually see and respond to their posts, not the follower count
 - [How creators vet brand deals: does this brand fit your niche?](https://transformer.gg/blog/how-creators-vet-brand-deals.md): A brand fits your niche when your followers would actually buy what it sells and you'd use it yourself
 - [Why creators ignore brand collaboration requests (and how to get a reply)](https://transformer.gg/blog/why-creators-ignore-brand-requests.md): Creators ignore brand requests that don't name a price
 - [Transformer.gg is live on Product Hunt](https://transformer.gg/blog/product-hunt-launch.md): Transformer.gg launched on Product Hunt on Sunday, November 15, 2026, as "The agentic influencer…
