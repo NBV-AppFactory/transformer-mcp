@@ -274,7 +274,7 @@ const commands = {
   },
   async reviews() {
     const sub = args[0] || "pending";
-    const starLine = (r) => `${"★".repeat(r.stars)}${"☆".repeat(5 - r.stars)}  ${r.reviewer?.name ?? ""}${r.revealed ? "" : "  (hidden until both sides review)"}${r.hidden ? "  [hidden]" : ""}  ${r.id}${r.text ? `\n    ${r.text}` : ""}${r.reply ? `\n    ↳ ${r.reply.text}` : ""}`;
+    const starLine = (r) => `${"★".repeat(r.stars)}${"☆".repeat(5 - r.stars)}  ${r.reviewer?.name ?? ""}${r.revealed ? "" : "  (not public yet)"}${r.hidden ? "  [hidden]" : ""}  ${r.id}${r.text ? `\n    ${r.text}` : ""}${r.reply ? `\n    ↳ ${r.reply.text}` : ""}`;
     const ratingLine = (r) => (r?.count ? `${r.avgStars}★ from ${r.count} review${r.count === 1 ? "" : "s"}, ${r.positivePct}% positive` : "no reviews yet");
     if (sub === "pending") return out(await call("GET", "/reviews/pending"), (d) =>
       d.pending.length ? d.pending.forEach((p) => console.log(`${p.offerId}  ${p.counterpart?.name ?? ""}: ${p.title}  (closes ${String(p.windowClosesAt).slice(0, 10)})`)) : console.log("No deals waiting for your review."));
@@ -294,7 +294,7 @@ const commands = {
       console.log(ratingLine(d.rating));
       d.reviews.forEach((r) => console.log(starLine(r)));
     });
-    die("usage: transformer reviews pending | show <offerId> | leave|edit <offerId> --stars 5 [--text …] [--ratings communication=5,on_time=4] | reply <reviewId> --text … | report <reviewId> --reason … | list <workspaceId> [--stars 5] [--page 2]");
+    die("usage: transformer reviews pending | show <offerId> | leave <offerId> --stars 5 [--text …] [--ratings communication=5,on_time=4] | reply <reviewId> --text … | report <reviewId> --reason … | list <workspaceId> [--stars 5] [--page 2]");
   },
   async disputes() {
     const sub = args[0] || "list";
@@ -782,9 +782,9 @@ const commands = {
   offers show|accept|decline|cancel <id>   (cancel: before the creator accepts; after, open a dispute)
   offers approve-early <id>     brand: approve the submitted post early (the Transformer team still reviews it)
   offers dispute <id> --reason not_posted|post_issue|cancel_request|other --details "…"   freezes the held payment until an admin decides
-  reviews pending | show <offerId> | leave|edit <offerId> --stars 5 [--text "…"] [--ratings communication=5,on_time=4]
+  reviews pending | show <offerId> | leave <offerId> --stars 5 [--text "…"] [--ratings communication=5,on_time=4]
   reviews reply <reviewId> --text "…" | report <reviewId> --reason "…" | list <workspaceId> [--stars 5]
-                                1-5 stars both ways once a deal ends; hidden until both sides review or 14 days pass
+                                1-5 stars both ways once a deal ends; public as soon as posted
   disputes list | resolve <id> --outcome release|refund --note "…" | refunds | refund-paid <offerId> --reference …   (admin keys)
   submit <id> <x-post-url>      verify a post you made on X with your tracked link (creator)
   earnings | balance            what you've earned and can request (creator)
