@@ -57,6 +57,7 @@ Key facts:
 ## Articles
 
 - [Blog](https://transformer.gg/blog): influencer marketing, explained (RSS: https://transformer.gg/blog/rss.xml; every article also has a .md version)
+- [How to become a content creator: what it is, how to start, and how creators get paid](https://transformer.gg/blog/how-to-become-a-content-creator.md): A content creator makes posts, videos or other media for an audience online, and often earns from it
 - [Who is an influencer's audience? How brands read it before they pay](https://transformer.gg/blog/how-to-read-an-influencers-audience.md): An influencer's audience is the people who actually see and respond to their posts, not the follower count
 - [How creators vet brand deals: does this brand fit your niche?](https://transformer.gg/blog/how-creators-vet-brand-deals.md): A brand fits your niche when your followers would actually buy what it sells and you'd use it yourself
 - [Why creators ignore brand collaboration requests (and how to get a reply)](https://transformer.gg/blog/why-creators-ignore-brand-requests.md): Creators ignore brand requests that don't name a price
