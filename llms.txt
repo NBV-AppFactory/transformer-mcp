@@ -5,11 +5,11 @@
 Key facts:
 
 - Two sides: brands (and the agents running their growth) and creators (and the agents managing their deals). Either side can be a person or an agent; nothing is dashboard-only.
-- Platform: X (Twitter) today. More networks later.
+- Platforms: X (Twitter) and LinkedIn today. More networks later.
 - Pricing: no subscription, seats or minimums. Brands set the payout per offer. Creators keep 80% of the payout and of any sales commission (Transformer keeps 20%), or 90% (Transformer keeps 10%) on every deal with any brand that signs up from their brand page for as long as that brand is on Transformer. Example: a $250 X post pays the creator $200 (or $225 on a brand they referred).
 - Creators never pay to join or to receive offers; Transformer's fee (20% standard, or 10% on creator-referred brands) comes out of the brand's payment. Creators keep 90% on every deal with any brand that signs up from their brand page.
-- Every sponsored post on Transformer carries X's Paid partnership label, X's own disclosure for paid posts.
-- Brand flow: website → suggested creators (matched from the brand's site) → choose a single sponsored post or a launch package targeting a specific launch day (coordinated multi-creator campaign) → send binding offers (sending is free) → the creator accepts (or counters) → the brand's saved card is charged automatically at that moment (balance first; a 72-hour pay link only if that charge fails) → the brand approves the creator's post draft → the creator posts → the Transformer team confirms the post → the creator's share is released. Offers are binding: if the creator accepts in time, the card is charged. Money from a declined or expired offer goes back to the brand's balance for the next offer.
+- Every sponsored post on Transformer carries X's Paid partnership label on X (or a clear paid partnership disclosure on LinkedIn).
+- Brand flow: website → suggested creators (matched from the brand's site) → choose a single post, a launch package targeting a launch day, or an open-brief campaign → send binding offers (sending is free) → the creator accepts (or counters) → the brand's saved card is charged automatically at that moment (balance first; a 72-hour pay link only if that charge fails) → the brand approves the creator's post draft → the creator posts → the Transformer team confirms the post → the creator's share is released. Offers are binding: if the creator accepts in time, the card is charged. Money from a declined or expired offer goes back to the brand's balance for the next offer.
 - Open briefs: brands can also post an open brief (what they're launching, URL, target launch date or flexible, talking points, budget and creator count). Signed-up creators browse open briefs and apply with their proposed price (prefilled from their rate card or influencer value) and a short note. When a brand accepts an application, it converts directly into a standard binding offer with the same card charge, draft approval, confirmation and payout lifecycle.
 - Offers come from the brand: a brand connects one X account (its company account or the sender's own) once, and every send needs it. Creators not on Transformer get the offer as a DM from that account (one-to-one, only if their profile invites business contact and they accept its DMs), and by email from Transformer on the brand's behalf where we have an address. Sending without it returns 409 brand_x_required with a connect link.
 - A card on file to send: a brand adds a card once (Stripe). Sending is free; when a creator accepts, the saved card is charged automatically (the brand's balance first). If that charge fails, the brand has 72 hours to pay by link (reminders at 24 and 60 hours); unpaid, the offer is cancelled and the creator is told. The creator posts only after the brand has paid, within 7 days of the payment.
@@ -19,7 +19,15 @@ Key facts:
 - Attribution: each accepted offer gets a tracked link (https://transformer.gg/r/<code>) that appends a tf_click id to the brand's URL. The brand reports sales with POST /api/v1/conversions and commission is calculated per sale. Per-creator landing pages and a visit pixel are supported.
 - Agent access: MCP server at https://transformer.gg/mcp (streamable HTTP), REST API at https://transformer.gg/api/v1, CLI installed with `curl -fsSL https://transformer.gg/install | sh`. MCP clients that support sign-in (Claude, Claude Code, ChatGPT, Cursor, …) just add the URL and sign in with X, picking the workspace the agent acts for (OAuth 2.1, revocable in Settings → Agents). Headless agents, the REST API and the CLI use a workspace API key (tf_live_…) as a bearer token; one key or connection acts for exactly one brand or creator workspace.
 - Operated by North Bay Opco I, Inc. (a Delaware corporation), Miami, Florida. Support: support@transformer.gg.
-- Transformer.gg is part of North Bay Ventures. Founded by Jon Oringer, who founded Shutterstock and took it public. About: https://transformer.gg/about
+- Transformer.gg is part of North Bay Ventures. Founded by Jon Oringer, who founded Shutterstock and took it public. Transformer is not part of Shutterstock. About: https://transformer.gg/about
+
+## Three ways brands run sponsorships
+
+Brands can run sponsorships on Transformer.gg in three ways. All three work across X and LinkedIn and follow the same rules: sending or posting is free, your saved card is charged only when a deal is accepted (balance first), you review the creator's post draft before it goes live, and payment is released after the Transformer team confirms the live post. Details: https://transformer.gg/docs#formats
+
+- **Single post (Book one creator):** Pick one specific creator on X or LinkedIn directly, set your ask and price, and send a binding offer (REST: POST /api/v1/offers; MCP: create_offer or send_offers). Best for testing a channel or booking a specific creator quickly.
+- **Launch package (Coordinate a launch day):** Pick a launch date (UTC) and posting window (default 24 hours) and book multiple X and LinkedIn creators to post together in one window (1 to 50 creators per call, add more creators to the same launch later, and optionally open the brief for creator applications too; REST: POST /api/v1/launch-packages; MCP: create_launch_package). Best for product launches, major releases, and announcement days.
+- **Campaign / Open brief (Run an open brief):** Write one brief for an ongoing push (product, URL, talking points, optional budget and creator count), let matching signed-up creators apply with their proposed price and a short note, and accept the ones you like (or add multiple creators over time). Accepting an application converts it into a standard binding offer (REST: POST /api/v1/briefs with isOpen: true; MCP: create_brief, list_brief_applications, accept_brief_application). Best for steady, ongoing awareness and inbound creator discovery.
 
 ## Influencer values
 
@@ -41,8 +49,9 @@ Key facts:
 
 ## Docs
 
-- [Developer docs](https://transformer.gg/docs): quickstart, authentication, concepts, MCP tools, CLI and REST reference (also as Markdown, below)
+- [Developer docs](https://transformer.gg/docs): quickstart, authentication, sponsorship formats, concepts, MCP tools, CLI and REST reference (also as Markdown, below)
 - [Quickstart](https://transformer.gg/docs/quickstart.md): account, workspace, API key, authentication, connect an agent
+- [Sponsorship formats](https://transformer.gg/docs/formats.md): Single post vs. Launch package vs. Campaign (open brief)
 - [Concepts](https://transformer.gg/docs/concepts.md): workspaces, offer lifecycle, deliverables, tracked links, conversions, payments
 - [MCP server and CLI](https://transformer.gg/docs/mcp.md): tools for searching creators, sending and accepting offers, submitting posts and reporting sales
 - [REST reference](https://transformer.gg/docs/rest.md): endpoints under /api/v1
@@ -52,7 +61,7 @@ Key facts:
 
 - [Home](https://transformer.gg/): what Transformer.gg is, how it works for brands and creators, pricing
 - [Pricing](https://transformer.gg/pricing.md): 80% to creators (90% on every deal with any brand that signs up from their brand page), 20% platform fee (10% on creator-referred brands), pay per offer, pricing FAQ
-- [For brands](https://transformer.gg/brands.md): book X creators in tech and AI; counts of creators who meet our bar, example prices, how a deal works
+- [For brands](https://transformer.gg/brands.md): book X and LinkedIn creators in tech and AI; counts of creators who meet our bar, example prices, how a deal works
 - [For creators](https://transformer.gg/#creators): get paid to post on X
 
 ## Articles
@@ -71,7 +80,7 @@ Key facts:
 - [How to find your best posts on X and do more of what works: a 20-minute weekly routine](https://transformer.gg/blog/how-to-find-your-best-posts-on-x.md): Sort your X posts by engagement rate, not likes, and look for patterns in format, topic, timing and first line
 - [How to read your X audience and find your best posting times in X analytics](https://transformer.gg/blog/how-to-read-your-x-audience-and-best-times.md): X analytics' Audience tab shows when the people who engage with you are active, how many are non-followers…
 - [How to turn your X analytics into brand deals: the stats brands ask for, and how engagement sets your price](https://transformer.gg/blog/x-analytics-for-brand-deals.md): Brands judge a creator on reach, engagement and audience
-- [How does a creator marketplace work? Matching, offers, payment, fees, and a brand's first steps](https://transformer.gg/blog/how-does-a-creator-marketplace-work.md): A creator marketplace is a platform where creators sign up for paid work and brands buy posts from them…
+- [How does a creator marketplace work? Who can join, matching, offers, payment and fees](https://transformer.gg/blog/how-does-a-creator-marketplace-work.md): A creator marketplace connects creators with brands for paid posts per deal
 - [Sponsored posts on X: the 2026 data from 309,000 accounts and 23,000 paid-partnership posts](https://transformer.gg/blog/sponsored-posts-on-x-2026-data.md): How many X creators do sponsored posts, how their reach and engagement change with size, and how fast X's…
 - [How much do influencer marketing platforms cost? Pricing models, UGC platforms, and CPM vs flat fee](https://transformer.gg/blog/influencer-marketing-platform-cost.md): Influencer marketing platforms charge by monthly subscription, by a percentage marketplace fee, by agency…
 - [How accurate are influencer rate calculators? What they measure, what they miss, and how to use one](https://transformer.gg/blog/how-accurate-are-influencer-rate-calculators.md): An influencer rate calculator gives a starting range, not a price, and it's only as good as its inputs
@@ -94,7 +103,7 @@ Key facts:
 - [UGC creators in 2026: what UGC and UGC platforms cost, how creators find deals and get paid, and how to start](https://transformer.gg/blog/ugc-creator-guide.md): A UGC creator makes photos and videos that brands post on their own channels and ads
 - [How do content creators make money? Getting paid to promote brands on X](https://transformer.gg/blog/how-creators-make-money-on-x.md): Creators earn from platform payouts, brand deals, affiliate links, products and subscriptions
 - [How to run an influencer campaign on X, step by step](https://transformer.gg/blog/how-to-run-an-influencer-campaign-on-x.md): Set one goal, define who you need to reach, shortlist creators those people follow, write a short ask, set…
-- [Which platform pays creators the most? Pay per 1,000 and per million views (2026)](https://transformer.gg/blog/do-creators-get-paid-per-1000-views.md): YouTube long-form pays most per view: about $2–$12 per 1,000 views ($2,000–$12,000 per million)
+- [Which platform pays creators the most? Pay per 1,000 views, CPM vs RPM, and likes (2026)](https://transformer.gg/blog/do-creators-get-paid-per-1000-views.md): YouTube long-form pays most per view: about $2–$12 per 1,000 views ($2,000–$12,000 per million)
 - [How much should you budget for your first influencer campaign?](https://transformer.gg/blog/influencer-marketing-budget-first-campaign.md): Build the budget from the bottom up
 - [Paid partnership rules on X: the Paid partnership label and what the FTC requires](https://transformer.gg/blog/ad-disclosure-rules-on-x.md): Paid posts and affiliate links on X are allowed if disclosed
 - [How much should you pay an influencer? A pricing guide for brands](https://transformer.gg/blog/how-much-to-pay-an-influencer.md): Start from audience size, then adjust for niche, engagement, format, usage rights and exclusivity

@@ -12,12 +12,23 @@ const BASE = (process.env.TRANSFORMER_URL || cfg.baseUrl || "https://transformer
 const KEY = process.env.TRANSFORMER_API_KEY || cfg.apiKey;
 
 const [cmd, ...rest] = process.argv.slice(2);
+const BOOL_FLAGS = new Set([
+  "json", "open", "acknowledge-binding", "accept-usual-price", "allow-ai",
+  "approve", "added", "worked-with-us", "unclaimed", "pending", "confirm-not-ready", "preview",
+]);
 const flags = {}, args = [];
 for (let i = 0; i < rest.length; i++) {
-  if (rest[i].startsWith("--")) { const k = rest[i].slice(2); flags[k] = rest[i + 1] && !rest[i + 1].startsWith("--") ? rest[++i] : "true"; }
-  else args.push(rest[i]);
+  if (rest[i].startsWith("--")) {
+    const k = rest[i].slice(2);
+    if (BOOL_FLAGS.has(k)) {
+      flags[k] = rest[i + 1] === "true" || rest[i + 1] === "false" ? rest[++i] : "true";
+    } else {
+      flags[k] = rest[i + 1] !== undefined && !rest[i + 1].startsWith("--") ? rest[++i] : "true";
+    }
+  } else args.push(rest[i]);
 }
-const json = "json" in flags;
+const flagOn = (k) => k in flags && flags[k] !== "false";
+const json = flagOn("json");
 
 async function call(method, path, body) {
   if (!KEY) die(`No API key. Run: transformer login   (create a key on a workspace page at ${BASE}/dashboard)`);
@@ -31,9 +42,19 @@ async function call(method, path, body) {
 function die(msg) { console.error(`✗ ${msg}`); process.exit(1); }
 const usd = (n) => `$${Number(n).toFixed(n % 1 ? 2 : 0)}`;
 const out = (data, pretty) => (json ? console.log(JSON.stringify(data, null, 2)) : pretty(data));
-const offerLine = (o) => `${o.id}  ${o.status.padEnd(9)} ${usd(o.payoutUsd).padStart(7)}  ${o.deliverable.padEnd(6)} ${(o.creator?.x || o.creator?.email || o.brand?.name || "").padEnd(18)} ${o.title}`;
+const creatorOf = (o) => {
+  if (o.network === "linkedin") {
+    const liSocial = (o.creator?.socials ?? []).find((s) => s.provider === "linkedin")?.handle;
+    const liSlug = o.creator?.linkedin || liSocial;
+    if (liSlug) return `in/${String(liSlug).replace(/^\/?in\//i, "").replace(/\/+$/, "")}`;
+    if (o.creator?.name) return o.creator.name;
+  }
+  return o.creator?.x || (o.creator?.linkedin ? `in/${o.creator.linkedin}` : null) || o.creator?.name || o.creator?.email || o.brand?.name || "";
+};
+const offerLine = (o) => `${o.id}  ${o.status.padEnd(9)} ${usd(o.payoutUsd).padStart(7)}  ${(o.network && o.network !== "x" ? `${o.network}:${o.deliverable}` : o.deliverable).padEnd(13)} ${creatorOf(o).padEnd(20)} ${o.title}`;
 const offerCard = ({ offer: o }) => {
   console.log(`✓ ${o.title}  [${o.status}]  ${usd(o.payoutUsd)}${o.commissionPercent ? ` + ${o.commissionPercent}% of sales` : ""}`);
+  if (o.network && o.network !== "x") console.log(`  network     ${o.network}`);
   if (o.creatorEarnsUsd != null) console.log(`  creator     earns ${usd(o.creatorEarnsUsd)}${o.creatorCommissionPercent ? ` + ${o.creatorCommissionPercent}% of sales` : ""} (platform fee ${o.platformFeePercent}%)`);
   console.log(`  id          ${o.id}`);
   if (o.trackedUrl) console.log(`  tracked     ${o.trackedUrl}`);
@@ -82,7 +103,7 @@ const commands = {
   async suggestions() {
     const params = new URLSearchParams();
     for (const k of ["budget", "size", "page"]) if (flags[k]) params.set(k, flags[k]);
-    if ("added" in flags) params.set("added", "1");
+    if (flagOn("added")) params.set("added", "1");
     return out(await call("GET", `/suggestions${params.size ? `?${params}` : ""}`), (d) => {
       if (!d.items.length) return console.log(d.note ?? "No suggestions yet.");
       for (const s of d.items) console.log(`@${s.xHandle.padEnd(18)} ${String(s.followers ?? "?").padStart(8)} followers  ${s.price.postUsd != null ? `$${s.price.lowUsd}–$${s.price.highUsd}` : "custom"}  ${s.why}${s.onTransformer ? "" : "  (not on Transformer yet)"}  ${s.profileId}`);
@@ -120,7 +141,7 @@ const commands = {
     const keys = ["network", "min-rating", "topics", "brand-fit", "tone", "min-followers", "max-followers", "niche", "min-engagement", "max-price", "country", "language", "metro", "active-days", "sponsors", "sort", "page", "limit"];
     const params = new URLSearchParams(q ? { q } : {});
     for (const k of keys) if (flags[k]) params.set(k.replace(/-([a-z])/g, (_, c) => c.toUpperCase()), flags[k]);
-    for (const k of ["worked-with-us", "unclaimed"]) if (flags[k]) params.set(k.replace(/-([a-z])/g, (_, c) => c.toUpperCase()), "1");
+    for (const k of ["worked-with-us", "unclaimed"]) if (flagOn(k)) params.set(k.replace(/-([a-z])/g, (_, c) => c.toUpperCase()), "1");
     out(await call("GET", `/creators/search?${params}`), (d) => {
       for (const c of d.results) {
         const nets = c.networks.map((n) => `${n.network}:@${n.handle} ${n.followers ?? "?"}`).join("  ");
@@ -231,20 +252,33 @@ const commands = {
     const sub = args[0] || "list";
     if (sub === "list") return out(await call("GET", `/offers${flags.status ? `?status=${flags.status}` : ""}`), (d) => (d.offers.length ? d.offers.forEach((o) => console.log(offerLine(o))) : console.log("No offers.")));
     // transformer offers status: each offer's stage (awaiting_payment → sent → accepted → posted → verified → paid, or declined / expired / refunded_to_balance)
-    if (sub === "status") return out(await call("GET", "/offers"), (d) => (d.offers.length ? d.offers.forEach((o) => console.log(`${o.id}  ${(o.stage ?? o.status).padEnd(19)} ${usd(o.payoutUsd).padStart(7)}  ${(o.creator?.x || "").padEnd(18)} ${o.title}`)) : console.log("No offers.")));
+    if (sub === "status") return out(await call("GET", "/offers"), (d) => (d.offers.length ? d.offers.forEach((o) => console.log(`${o.id}  ${(o.stage ?? o.status).padEnd(19)} ${usd(o.payoutUsd).padStart(7)}  ${creatorOf(o).padEnd(20)} ${o.title}`)) : console.log("No offers.")));
     if (sub === "create") {
       // Fields left out come from --template (if given) or the server defaults.
+      const net = flags.network ? String(flags.network).toLowerCase() : undefined;
+      if (net && !["x", "linkedin"].includes(net)) die("--network must be x or linkedin");
+      const inferredNet = net ?? (flags.creator && (/linkedin\.com\/in\//i.test(flags.creator) || /^\/?in\//i.test(flags.creator)) ? "linkedin" : undefined);
+      const acceptUsual = flagOn("accept-usual-price");
       const fields = {
         templateId: flags.template, title: flags.title, brief: flags.brief, url: flags.url, deliverable: flags.deliverable,
         quantity: flags.quantity && Number(flags.quantity), payoutUsd: flags.payout && Number(flags.payout), commissionPercent: flags.commission && Number(flags.commission),
-        ...("allow-ai" in flags && { allowAi: flags["allow-ai"] !== "false" }),
+        ...(inferredNet ? { network: inferredNet } : {}),
+        ...(flags.days ? { expiresInDays: Number(flags.days) } : {}),
+        ...(flags.email ? { email: flags.email } : {}),
+        ...("acknowledge-binding" in flags && { acknowledgeBinding: flagOn("acknowledge-binding") }),
+        ...(acceptUsual ? { acceptUsualPrice: true } : {}),
+        ...(flags["expected-price"] ? { expectedPriceUsd: Number(flags["expected-price"]) } : {}),
+        ...("allow-ai" in flags && { allowAi: flagOn("allow-ai") }),
       };
       if (!flags.template) {
-        for (const k of ["url", "payout"]) if (!flags[k]) die(`--${k} is required (or use --template <id>)`);
+        if (!flags.url) die("--url is required (or use --template <id>)");
+        if (!flags.payout && !acceptUsual) die("--payout is required (or use --template <id> or --accept-usual-price)");
         fields.title ??= "Sponsored post";
       }
       // Many creators: --creators @a,@b,@c or --csv file (first column = handle/email; a "creator" header row is skipped).
       if (flags.creators || flags.csv) {
+        if (inferredNet === "linkedin") die("--creators / --csv bulk offers are X-only; use `transformer launch create --creators ...` for multi-creator LinkedIn offers");
+        if (!flags.template && !flags.payout) die("--payout is required for bulk --creators / --csv offers (or use --template <id>)");
         let list = flags.creators ? String(flags.creators).split(/[\s,;]+/) : [];
         if (flags.csv) {
           const { readFileSync } = await import("node:fs");
@@ -255,11 +289,12 @@ const commands = {
           for (const r of d.results) console.log(r.ok ? `  ${r.creator.padEnd(24)} ${r.inviteUrl}${r.existing ? "  (existing)" : ""}` : `  ${r.creator.padEnd(24)} ✗ ${r.error}`);
         });
       }
-      if (!flags.creator) die("--creator @handle (or --creators @a,@b / --csv file) is required");
-      return out(await call("POST", "/offers", { ...fields, creator: flags.creator }),
+      if (!flags.creator) die("--creator @handle (or LinkedIn URL with --network linkedin, or --creators @a,@b / --csv file) is required");
+      const creatorVal = inferredNet === "linkedin" ? String(flags.creator).replace(/^\/?in\//i, "").replace(/\/+$/, "") : flags.creator;
+      return out(await call("POST", "/offers", { ...fields, creator: creatorVal }),
         (d) => {
           offerCard(d);
-          console.log("  → you pay when the creator accepts (transformer pay); share the invite link with the creator, or they'll see it when they connect X");
+          console.log("  → you pay only when the creator accepts; share the invite link with the creator, or they'll see it in Transformer");
         });
     }
     if (sub === "show") return out(await call("GET", `/offers/${args[1]}`), offerCard);
@@ -352,14 +387,14 @@ const commands = {
     const sub = args[0] || "list";
     const line = (f) => `${f.key.padEnd(20)} ${f.state.padEnd(8)} ${f.state === "percent" ? `${f.rules.percent ?? 0}% ` : ""}${f.state === "targets" ? `${(f.rules.users ?? []).length} users, ${(f.rules.workspaces ?? []).length} workspaces ` : ""}${f.summary ?? f.description}${f.notReady ? `  [${f.notReady}]` : ""}${f.createdAt ? `  (added ${String(f.createdAt).slice(0, 10)})` : ""}`;
     // --pending: only flags not live (on for everyone) yet.
-    if (sub === "list") return out(await call("GET", `/admin/flags${"pending" in flags ? "?pending=1" : ""}`), (d) => (d.flags.length ? d.flags.forEach((f) => console.log(line(f))) : console.log("Every flag is live.")));
+    if (sub === "list") return out(await call("GET", `/admin/flags${flagOn("pending") ? "?pending=1" : ""}`), (d) => (d.flags.length ? d.flags.forEach((f) => console.log(line(f))) : console.log("Every flag is live.")));
     if (sub === "get" && args[1]) return out(await call("GET", `/admin/flags/${args[1]}`), (d) => {
       console.log(line(d.flag));
       for (const h of d.history) console.log(`  ${String(h.at).slice(0, 16)}  ${h.by}: ${h.from.state} → ${h.to.state}${h.note ? `  (${h.note})` : ""}`);
     });
     if (sub === "set" && args[1] && args[2]) {
       const rules = flags.percent !== undefined ? { percent: Number(flags.percent) } : undefined;
-      return out(await call("PATCH", `/admin/flags/${args[1]}`, { state: args[2], ...(rules ? { rules } : {}), ...(flags.note ? { note: flags.note } : {}), ...("confirm-not-ready" in flags ? { confirmNotReady: true } : {}) }), (d) => console.log(`✓ ${line(d.flag)}`));
+      return out(await call("PATCH", `/admin/flags/${args[1]}`, { state: args[2], ...(rules ? { rules } : {}), ...(flags.note ? { note: flags.note } : {}), ...(flagOn("confirm-not-ready") ? { confirmNotReady: true } : {}) }), (d) => console.log(`✓ ${line(d.flag)}`));
     }
     // Several at once: on for everyone, or back to admins only (one transaction; flags that aren't ready are refused).
     if (sub === "bulk" && ["on", "admins"].includes(args[1]) && args[2])
@@ -400,6 +435,91 @@ const commands = {
     });
     die("usage: transformer brands create <website>");
   },
+  async launch() {
+    const sub = args[0] || "list";
+    const parseLaunchItem = (raw, defaultNet) => {
+      const s = String(raw).trim();
+      const prof = s.match(/^profile:([0-9a-f-]{36})$/i);
+      if (prof) return { profileId: prof[1], network: defaultNet };
+      const liPref = s.match(/^(?:linkedin|li):(.+)$/i);
+      if (liPref) return { creator: liPref[1].trim().replace(/^\/?in\//i, "").replace(/\/+$/, ""), network: "linkedin" };
+      const xPref = s.match(/^x:(.+)$/i);
+      if (xPref) return { creator: xPref[1].trim(), network: "x" };
+      if (/linkedin\.com\/in\//i.test(s)) return { creator: s, network: "linkedin" };
+      const inSlug = s.match(/^\/?in\/([a-z0-9-]{3,100})\/?$/i);
+      if (inSlug) return { creator: inSlug[1], network: "linkedin" };
+      return { creator: s, network: defaultNet };
+    };
+    const pkgLine = (p) => {
+      const s = p.summary ?? {};
+      return `${p.brief.id}  ${p.launchDate ?? "-"} (${p.launchWindowHours ?? 24}h)  ${s.totalOffers ?? 0} offers (${s.accepted ?? 0} accepted, ${s.confirmed ?? 0} confirmed, ${usd(s.spentUsd ?? 0)} spent)  ${p.brief.title}${p.brief.isOpen ? "  [open]" : ""}`;
+    };
+    if (sub === "list") {
+      return out(await call("GET", "/launch-packages"), (d) =>
+        d.packages.length ? d.packages.forEach((p) => console.log(pkgLine(p))) : console.log("No launch packages."));
+    }
+    if (sub === "show" && args[1]) {
+      return out(await call("GET", `/launch-packages/${args[1]}`), (d) => {
+        const s = d.summary ?? {};
+        console.log(`${d.brief.title}  (${d.brief.launchDate ?? "-"}, ${d.brief.launchWindowHours ?? 24}h window)${d.brief.isOpen ? "  [open]" : ""}`);
+        console.log(`  id          ${d.brief.id}`);
+        console.log(`  summary     ${s.totalOffers ?? 0} offers · ${s.sent ?? 0} sent · ${s.accepted ?? 0} accepted · ${s.confirmed ?? 0} confirmed · ${usd(s.spentUsd ?? 0)} spent`);
+        for (const o of d.offers ?? []) console.log(`  ${offerLine(o)}`);
+      });
+    }
+    if (sub === "create" || sub === "add") {
+      const defaultNet = flags.network ? String(flags.network).toLowerCase() : "x";
+      if (!["x", "linkedin"].includes(defaultNet)) die("--network must be x or linkedin");
+      const repeated = process.argv.slice(2).flatMap((v, i, a) => (v === "--creator" && a[i + 1] && !a[i + 1].startsWith("--") ? [a[i + 1]] : []));
+      const list = [...(flags.creators ? String(flags.creators).split(/[\s,;]+/) : []), ...repeated].map((x) => x.trim()).filter(Boolean);
+      if (!list.length) die('usage: transformer launch create --title "..." --url https://... --launch-date YYYY-MM-DD --creators @a,https://linkedin.com/in/b [--window-hours 24] [--price 200] [--open] [--brief <id>] [--acknowledge-binding] [--accept-usual-price]');
+      const briefId = sub === "add" ? (args[1] || flags.brief) : flags.brief;
+      if (sub === "add" && !briefId) die("usage: transformer launch add <briefId> --creators @a,https://linkedin.com/in/b [--price 200] [--acknowledge-binding]");
+      if (!briefId) {
+        for (const k of ["title", "url", "launch-date"]) if (!flags[k]) die(`--${k} is required (or pass --brief <id> to add creators to an existing launch package)`);
+      }
+      const priceRaw = flags.price ?? flags.payout;
+      const items = list.map((raw) => ({
+        ...parseLaunchItem(raw, defaultNet),
+        ...(priceRaw != null ? { priceUsd: Number(priceRaw) } : {}),
+        ...(flags["expected-price"] ? { expectedPriceUsd: Number(flags["expected-price"]) } : {}),
+        ...(flags.ask ? { ask: flags.ask } : {}),
+        ...(flags.days ? { expiresInDays: Number(flags.days) } : {}),
+      }));
+      const common = {
+        items,
+        ...(flags.email ? { email: flags.email } : {}),
+        ...("acknowledge-binding" in flags ? { acknowledgeBinding: flags["acknowledge-binding"] !== "false" } : {}),
+        ...("accept-usual-price" in flags ? { acceptUsualPrice: flags["accept-usual-price"] !== "false" } : {}),
+      };
+      const body = briefId
+        ? { briefId, ...common }
+        : {
+            title: flags.title,
+            url: flags.url,
+            launchDate: flags["launch-date"],
+            ...(flags["window-hours"] ? { launchWindowHours: Number(flags["window-hours"]) } : {}),
+            ...(flags.product ? { product: flags.product } : {}),
+            ...(flags.description ? { description: flags.description } : {}),
+            ...(flags.points ? { talkingPoints: String(flags.points).split("|").map((x) => x.trim()).filter(Boolean) } : {}),
+            ...(flags.avoid ? { avoid: String(flags.avoid).split("|").map((x) => x.trim()).filter(Boolean) } : {}),
+            ...(flags.deliverable ? { deliverable: flags.deliverable } : {}),
+            ...(flags.commission ? { commissionPercent: Number(flags.commission) } : {}),
+            ...(flags.budget ? { budgetUsd: Number(flags.budget) } : {}),
+            ...(flags["target-creators"] ? { targetCreators: Number(flags["target-creators"]) } : {}),
+            ...("open" in flags ? { isOpen: flags.open !== "false" } : {}),
+            ...("allow-ai" in flags ? { allowAi: flags["allow-ai"] !== "false" } : {}),
+            ...common,
+          };
+      return out(await call("POST", "/launch-packages", body), (d) => {
+        console.log(`✓ ${d.message}`);
+        console.log(`  brief       ${d.brief.id}`);
+        console.log(`  offers      ${d.offerIds.join(", ")}`);
+        console.log(`  total       ${usd(d.totalUsd)}`);
+      });
+    }
+    die('usage: transformer launch list | show <briefId> | create --title "..." --url https://... --launch-date YYYY-MM-DD --creators @a,https://linkedin.com/in/b [--window-hours 24] [--price 200] [--open] [--brief <id>] [--acknowledge-binding] [--accept-usual-price]   (brand)');
+  },
   async briefs() {
     const sub = args[0] || "list";
     if (sub === "starter") return out(await call("POST", "/brand-profile/starter-briefs", { count: flags.count ? Number(flags.count) : undefined }), (d) => {
@@ -417,26 +537,56 @@ const commands = {
     });
     const fields = () => {
       const f = {};
-      for (const [k, v] of Object.entries({ title: "title", product: "product", url: "url", landing: "landingUrlTemplate", deliverable: "deliverable", deadline: "deadline", status: "status", pricing: "pricing" })) if (flags[k]) f[v] = flags[k];
+      for (const [k, v] of Object.entries({ title: "title", product: "product", description: "description", url: "url", landing: "landingUrlTemplate", deliverable: "deliverable", deadline: "deadline", status: "status", pricing: "pricing", type: "campaignType", "launch-date": "launchDate" })) if (flags[k]) f[v] = flags[k];
       for (const [k, v] of Object.entries({ points: "talkingPoints", avoid: "avoid", must: "mustHaves" })) if (flags[k]) f[v] = String(flags[k]).split("|").map((x) => x.trim()).filter(Boolean);
       if (flags.receives) f.creatorReceivesUsd = Number(flags.receives);
+      if (flags.payout) f.payoutUsd = Number(flags.payout);
+      if (flags.commission) f.commissionPercent = Number(flags.commission);
       if (flags.quantity) f.quantity = Number(flags.quantity);
+      if (flags["window-hours"]) f.launchWindowHours = Number(flags["window-hours"]);
+      if (flags.budget) f.budgetUsd = Number(flags.budget);
+      if (flags["target-creators"]) f.targetCreators = Number(flags["target-creators"]);
+      if ("open" in flags) f.isOpen = flags.open !== "false";
       if ("allow-ai" in flags) f.allowAi = flags["allow-ai"] !== "false";
       return f;
     };
-    const line = (b) => `${b.id}  ${b.status.padEnd(7)} ${b.title}  · ${b.creatorReceivesUsd != null ? `creator ${usd(b.creatorReceivesUsd)} (brand ${usd(b.payoutUsd)})` : "tiers"} · ${b.counts.sent + b.counts.accepted} out, ${b.counts.verified} verified, ${b.stats.clicks} clicks, ${b.stats.signups} signups`;
+    const line = (b) => `${b.id}  ${b.status.padEnd(7)} ${b.title}${b.isOpen ? " [open]" : ""}${b.launchDate ? ` (${b.launchDate})` : ""}  · ${b.creatorReceivesUsd != null ? `creator ${usd(b.creatorReceivesUsd)} (brand ${usd(b.payoutUsd)})` : "tiers"} · ${b.counts.sent + b.counts.accepted} out, ${b.counts.verified} confirmed, ${b.stats.clicks} clicks, ${b.stats.signups} signups`;
     if (sub === "list") return out(await call("GET", `/briefs${flags.status ? `?status=${flags.status}` : ""}`), (d) => (d.briefs.length ? d.briefs.forEach((b) => console.log(line(b))) : console.log("No briefs.")));
     if (sub === "create") return out(await call("POST", "/briefs", fields()), (d) => console.log(`✓ ${line(d.brief)}`));
     if (sub === "edit" && args[1]) return out(await call("PATCH", `/briefs/${args[1]}`, fields()), (d) => console.log(`✓ ${line(d.brief)}`));
     if (sub === "close" && args[1]) return out(await call("POST", `/briefs/${args[1]}/close`), (d) => console.log(`✓ closed ${d.brief.title}`));
     if (sub === "show" && args[1]) return out(await call("GET", `/briefs/${args[1]}`), (d) => { console.log(line(d.brief)); d.offers.forEach((o) => console.log(`  ${offerLine(o)}`)); });
+    if (sub === "applications" && args[1]) {
+      const qs = flags.status ? `?status=${encodeURIComponent(flags.status)}` : "";
+      return out(await call("GET", `/briefs/${args[1]}/applications${qs}`), (d) => {
+        if (!d.applications.length) return console.log("No applications.");
+        for (const a of d.applications) {
+          const who = a.creator?.xHandle ? `@${a.creator.xHandle}` : (a.creator?.name ?? "");
+          console.log(`${a.id}  ${a.status.padEnd(9)} ${usd(a.proposedPriceUsd).padStart(7)}  ${who.padEnd(18)} ${a.note ?? ""}`);
+        }
+      });
+    }
+    if (sub === "accept" && args[1] && args[2]) {
+      const body = {
+        ...("acknowledge-binding" in flags ? { acknowledgeBinding: flags["acknowledge-binding"] !== "false" } : {}),
+        ...(flags.email ? { email: flags.email } : {}),
+      };
+      return out(await call("POST", `/briefs/${args[1]}/applications/${args[2]}/accept`, body), (d) => {
+        console.log(`✓ accepted application ${d.application.id}`);
+        if (d.offer) offerCard({ offer: d.offer });
+      });
+    }
+    if (sub === "decline" && args[1] && args[2]) {
+      return out(await call("POST", `/briefs/${args[1]}/applications/${args[2]}/decline`), (d) =>
+        console.log(`✓ declined application ${d.application.id}`));
+    }
     if (sub === "send" && args[1]) {
       if (!flags.creators) die("--creators @a,@b is required");
-      return out(await call("POST", `/briefs/${args[1]}/offers`, { creators: String(flags.creators).split(/[\s,;]+/).filter(Boolean), approve: !!flags.approve, ...(flags.receives ? { creatorReceivesUsd: Number(flags.receives) } : {}) }), (d) => {
+      return out(await call("POST", `/briefs/${args[1]}/offers`, { creators: String(flags.creators).split(/[\s,;]+/).filter(Boolean), approve: flagOn("approve"), ...(flags.receives ? { creatorReceivesUsd: Number(flags.receives) } : {}) }), (d) => {
         console.log(`✓ ${d.drafted} offer${d.drafted === 1 ? "" : "s"} drafted from the brief${d.failed ? `, ${d.failed} skipped` : ""}${d.approved ? `; sent ${d.approved.approved}, waiting for funding ${d.approved.awaitingFunding}` : " (review: transformer drafts list)"}`);
       });
     }
-    die('usage: transformer briefs list | create --title … --url … [--receives 200] [--points "a|b"] [--avoid "…"] [--deadline 2026-11-15] | show|edit|close <id> | send <id> --creators @a,@b [--approve]   (brand)');
+    die('usage: transformer briefs list | create --title … --url … [--open] [--type single_post|launch_package] [--launch-date YYYY-MM-DD] [--window-hours 24] [--budget 1500] [--target-creators 5] [--receives 200] [--points "a|b"] [--avoid "…"] [--deadline 2026-11-15] | show|edit|close <id> | applications <briefId> [--status pending] | accept <briefId> <applicationId> [--acknowledge-binding] | decline <briefId> <applicationId> | send <id> --creators @a,@b [--approve]   (brand)');
   },
   async deals() {
     const sub = args[0] || "list";
@@ -634,7 +784,7 @@ const commands = {
         console.log(`✓ marked paid: ${usd(d.request.amountUsd)} ref ${d.request.reference}`));
     }
     if (sub === "wise" && args[1]) {
-      if (flags.preview) return out(await call("GET", `/admin/payout-requests/${args[1]}/wise-preview`), (d) =>
+      if (flagOn("preview")) return out(await call("GET", `/admin/payout-requests/${args[1]}/wise-preview`), (d) =>
         console.log(`${usd(d.sourceAmountUsd)} from USD balance (${d.usdBalance ?? "?"} available) → ${d.targetAmount} ${d.currency} at ${d.rate}, Wise fee ${usd(d.feeUsd)} (${d.recipientType} recipient, ${d.env})`));
       return out(await call("POST", `/admin/payout-requests/${args[1]}/pay-wise`), (d) =>
         console.log(`✓ Wise transfer ${d.transferId}: funding ${d.fund.status}${d.wise.error ? ` (${d.wise.error})` : ""}; status ${d.wise.status}. Marked paid automatically when Wise sends it.`));
@@ -759,8 +909,12 @@ const commands = {
   profile list | hide | remove  show in / hide from / delete from the directory (creator)
   profile set [--headline …] [--niches ai,devtools] [--post 250] [--thread none] [--video 900] [--open false]
   offers list [--status sent]   offers sent (brand) or received (creator)
-  offers create --creator @jane --url https://… --payout 250 [--deliverable post|thread|video]
-                [--quantity 1] [--title …] [--brief …] [--commission 10] [--template <id>] [--allow-ai]  (AI personas may take it)
+  offers create --creator @jane --url https://… --payout 250 [--network x|linkedin] [--deliverable post|thread|video]
+                [--quantity 1] [--title …] [--brief …] [--commission 10] [--template <id>] [--acknowledge-binding] [--accept-usual-price] [--allow-ai]
+  launch list | show <briefId>  your coordinated launch packages (brand)
+  launch create --title "…" --url https://… --launch-date YYYY-MM-DD --creators @a,https://linkedin.com/in/b
+                [--window-hours 24] [--price 200] [--open] [--brief <id>] [--acknowledge-binding] [--accept-usual-price]
+                                coordinate X and LinkedIn creators for one launch window (brand)
   pay [offer-id…]               pay for accepted offers (all waiting when no ids): balance first, then a checkout link (brand)
   posts --creator <id|@h>       suggested X post per creator, in their voice ({link} + #ad) (brand)
   add @handle [x.com/handle…]   add creators by X handle (we look them up and index them; contacts nobody) (brand)
@@ -775,7 +929,9 @@ const commands = {
   drafts approve <id…> | --batch <id>   go live; prints invite link + pitch to paste in X DMs
   drafts discard <id…> | --batch <id>
   pricing                       follower tiers and pitch template (brand)
-  briefs list | create --title … --url … --receives 200 | show|edit|close <id> | send <id> --creators @a,@b [--approve]   (brand)
+  briefs list | create --title … --url … [--open] [--type single_post|launch_package] [--launch-date YYYY-MM-DD] [--window-hours 24] [--budget 1500] [--target-creators 5] [--receives 200]
+  briefs show|edit|close <id> | send <id> --creators @a,@b [--approve]   (brand)
+  briefs applications <briefId> [--status pending] | accept <briefId> <applicationId> [--acknowledge-binding] | decline <briefId> <applicationId>   (brand)
   deals list | show <id> | submit <id> <x-post-url>   (creator: offers you accepted)
   templates list | save --name … --title … --url … [--payout …] | delete <id>   (no --payout: follower tiers)
   funnel [--batch <id>]         invite funnel: sent → viewed → signed in → accepted → posted → paid
