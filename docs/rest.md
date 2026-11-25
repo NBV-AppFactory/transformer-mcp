@@ -4,7 +4,7 @@ Base URL `https://transformer.gg/api/v1`. Requests and responses are JSON. Amoun
 
 GET `/api/v1/me` brand or creator key
 
-The workspace this key acts for, its connected X account (creators) and totals. Use it to check whether you're on the brand or creator side.
+The workspace this key acts for, its connected social accounts (creators) and totals. Use it to check whether you're on the brand or creator side.
 
 Request
 
@@ -37,11 +37,11 @@ Response
 
 GET `/api/v1/creators?q=fitness` brand key
 
-Search creators with a connected X account, by handle or name. Up to 50 results, largest audience first.
+Search creators on X and LinkedIn by handle or name. Up to 50 results, largest audience first.
 
 | Field | Type | Description |
 | --- | --- | --- |
-| q | string | Part of an X handle or name. |
+| q | string | Part of a handle or name. |
 
 Request
 
@@ -73,14 +73,14 @@ Send a creator an offer. Returns `201`. Share `inviteUrl` with the creator if th
 
 | Field | Type | Description |
 | --- | --- | --- |
-| creator | string | The creator's X handle ("@demo_creator"), an email address, or a creator workspace id. |
+| creator | string | The creator's handle ("@demo_creator"), an email address, or a creator workspace id. |
 | title | string | Short name for the offer. |
 | brief | string | Your note to the creator: what to say, what to avoid. |
 | url | string | The page to promote. The tracked link redirects here. |
-| deliverable | "post" \| "thread" \| "video" | What the creator publishes on X. |
-| quantity | integer | How many deliverables, 1–20. Default 1. |
+| deliverable | "post" \| "thread" \| "video" | What the creator publishes on X or LinkedIn. |
+| quantity | integer | How many deliverables, 1-20. Default 1. |
 | payoutUsd | number | Fixed payout. The brand's saved card is charged when the creator accepts; it's held and released once the Transformer team confirms the post. |
-| commissionPercent | number | Optional commission on reported sales, 0–50. Default 0. |
+| commissionPercent | number | Optional commission on reported sales, 0-50. Default 0. |
 | expiresInDays | integer | Offer is good for (days): 3, 7, 10 or 14; default 7. |
 
 Request
@@ -134,7 +134,7 @@ Response
 
 GET `/api/v1/offers?status=sent` brand or creator key
 
-Offers this workspace sent (brand), or that were sent to this creator or its X handle, newest first.
+Offers this workspace sent (brand), or that were sent to this creator or their connected social handle, newest first.
 
 | Field | Type | Description |
 | --- | --- | --- |
@@ -250,7 +250,7 @@ Response
 
 POST `/api/v1/offers/{id}/accept` creator key
 
-Accept an offer that's still `sent`. The response includes `trackedUrl`, the link to put in your post. Connect X first; your account must match the handle the offer was sent to.
+Accept an offer that's still `sent`. The response includes `trackedUrl`, the link to put in your post. Connect X or LinkedIn first (or use manual mode); your handle must match the one the offer was sent to.
 
 Request
 
@@ -404,11 +404,11 @@ Response
 
 POST `/api/v1/offers/{id}/submissions` creator key
 
-Submit a post you published on X yourself (Transformer never posts for you), for the Transformer team's review (automated checks assist): it must be public, from the creator's own account, contain everything in the offer's `mustInclude` (its `postLink`), carry X's Paid partnership label, plus a video for `video` offers. The submission is `pending` until the team confirms it or sends it back with a reason (`rejected`; you can resubmit). A URL that isn't an X post returns `400`.
+Submit a post you published on X or LinkedIn yourself (Transformer never posts for you), for the Transformer team's review (automated checks assist): it must be public, from the creator's own account, contain everything in the offer's `mustInclude` (its `postLink`), carry the required paid partnership disclosure (X's Paid partnership label on X), plus a video for `video` offers. The submission is `pending` until the team confirms it or sends it back with a reason (`rejected`; you can resubmit). An invalid post URL returns `400`.
 
 | Field | Type | Description |
 | --- | --- | --- |
-| url | string | The URL of a post on X from your connected account. |
+| url | string | The URL of a post on X or LinkedIn from your account. |
 
 Request
 
@@ -475,7 +475,7 @@ Record a visit to a brand's own per-creator landing page, server-side. It counts
 
 | Field | Type | Description |
 | --- | --- | --- |
-| handle | string | The creator's X handle, e.g. from your /x/{handle} landing page (with or without @, any case). Uses your latest live offer to them. |
+| handle | string | The creator's X or LinkedIn handle, e.g. from your /x/{handle} landing page (with or without @, any case). Uses your latest live offer to them. |
 | offerId | string | Instead of handle, when you know the offer. |
 | clickId | string | Optional. The tf_click query value if the visitor came through the tracked /r link: that click is reused, not counted twice. |
 | url | string | Optional. The landing page URL. |
@@ -510,7 +510,7 @@ Report a sale or signup (send `amountUsd: 0` for a signup) that came from a crea
 | Field | Type | Description |
 | --- | --- | --- |
 | clickId | string | The tf_click value from the landing URL, or the clickId from POST /visits (preferred). |
-| handle | string | The creator's X handle. Used when there's no clickId, or as a fallback if the clickId is unknown. Uses your latest live offer to them. |
+| handle | string | The creator's X or LinkedIn handle. Used when there's no clickId, or as a fallback if the clickId is unknown. Uses your latest live offer to them. |
 | offerId | string | Instead of clickId, when the sale can't be tied to a click. |
 | amountUsd | number | Order value the commission is calculated on. |
 | orderId | string | Your order id. Reporting the same order twice is a no-op. |

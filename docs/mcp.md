@@ -43,13 +43,13 @@ claude mcp add --transport http transformer https://transformer.gg/mcp --header 
 | accept_offer | creator | Accept an offer and get its tracked link. |
 | decline_offer | creator | Decline an offer. |
 | cancel_offer | brand | Cancel an offer that hasn't been completed. |
-| submit_post | creator | Submit an existing X post URL for the Transformer team's check. |
+| submit_post | creator | Submit an existing X or LinkedIn post URL for the Transformer team's check. |
 | report_conversion | brand | Report a sale with the tf_click id (or an offerId). The same orderId twice is ignored. |
 | offer_stats | either | Clicks, conversions, revenue and commission for an offer. |
 | pay_offers | brand | Pay for accepted offers whose card charge didn't go through: balance first, then a checkout link. |
 | list_deals | creator | Accepted offers with their next step (post, submit, confirmed, paid) and due date. |
 | submit_deal_post | creator | Submit the post URL for a deal, for the Transformer team's review. |
-| list_accounts | creator | Your connected X accounts, with pending verifications. |
+| list_accounts | creator | Your connected social accounts, with pending verifications. |
 | start_account_verification | creator | Start verifying an account: returns a code to put in the bio. |
 | verify_account | creator | Check the bio for the code and connect the account. |
 

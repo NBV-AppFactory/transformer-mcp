@@ -49,7 +49,13 @@ const creatorOf = (o) => {
     if (liSlug) return `in/${String(liSlug).replace(/^\/?in\//i, "").replace(/\/+$/, "")}`;
     if (o.creator?.name) return o.creator.name;
   }
-  return o.creator?.x || (o.creator?.linkedin ? `in/${o.creator.linkedin}` : null) || o.creator?.name || o.creator?.email || o.brand?.name || "";
+  if (o.network === "threads") {
+    const thSocial = (o.creator?.socials ?? []).find((s) => s.provider === "threads")?.handle;
+    const thHandle = o.creator?.threads || (thSocial ? `@${thSocial}` : null);
+    if (thHandle) return thHandle;
+    if (o.creator?.name) return o.creator.name;
+  }
+  return o.creator?.x || (o.creator?.linkedin ? `in/${o.creator.linkedin}` : null) || o.creator?.threads || o.creator?.name || o.creator?.email || o.brand?.name || "";
 };
 const offerLine = (o) => `${o.id}  ${o.status.padEnd(9)} ${usd(o.payoutUsd).padStart(7)}  ${(o.network && o.network !== "x" ? `${o.network}:${o.deliverable}` : o.deliverable).padEnd(13)} ${creatorOf(o).padEnd(20)} ${o.title}`;
 const offerCard = ({ offer: o }) => {
@@ -256,8 +262,14 @@ const commands = {
     if (sub === "create") {
       // Fields left out come from --template (if given) or the server defaults.
       const net = flags.network ? String(flags.network).toLowerCase() : undefined;
-      if (net && !["x", "linkedin"].includes(net)) die("--network must be x or linkedin");
-      const inferredNet = net ?? (flags.creator && (/linkedin\.com\/in\//i.test(flags.creator) || /^\/?in\//i.test(flags.creator)) ? "linkedin" : undefined);
+      if (net && !["x", "linkedin", "threads"].includes(net)) die("--network must be x, linkedin, or threads");
+      const inferredNet = net ?? (
+        flags.creator && (/linkedin\.com\/in\//i.test(flags.creator) || /^\/?in\//i.test(flags.creator))
+          ? "linkedin"
+          : flags.creator && /threads\.(?:com|net)\/@/i.test(flags.creator)
+            ? "threads"
+            : undefined
+      );
       const acceptUsual = flagOn("accept-usual-price");
       const fields = {
         templateId: flags.template, title: flags.title, brief: flags.brief, url: flags.url, deliverable: flags.deliverable,
@@ -277,7 +289,7 @@ const commands = {
       }
       // Many creators: --creators @a,@b,@c or --csv file (first column = handle/email; a "creator" header row is skipped).
       if (flags.creators || flags.csv) {
-        if (inferredNet === "linkedin") die("--creators / --csv bulk offers are X-only; use `transformer launch create --creators ...` for multi-creator LinkedIn offers");
+        if (inferredNet === "linkedin" || inferredNet === "threads") die("--creators / --csv bulk offers are X-only; use `transformer launch create --creators ...` for multi-creator LinkedIn or Threads offers");
         if (!flags.template && !flags.payout) die("--payout is required for bulk --creators / --csv offers (or use --template <id>)");
         let list = flags.creators ? String(flags.creators).split(/[\s,;]+/) : [];
         if (flags.csv) {
@@ -443,9 +455,12 @@ const commands = {
       if (prof) return { profileId: prof[1], network: defaultNet };
       const liPref = s.match(/^(?:linkedin|li):(.+)$/i);
       if (liPref) return { creator: liPref[1].trim().replace(/^\/?in\//i, "").replace(/\/+$/, ""), network: "linkedin" };
+      const thPref = s.match(/^(?:threads|th):(.+)$/i);
+      if (thPref) return { creator: thPref[1].trim(), network: "threads" };
       const xPref = s.match(/^x:(.+)$/i);
       if (xPref) return { creator: xPref[1].trim(), network: "x" };
       if (/linkedin\.com\/in\//i.test(s)) return { creator: s, network: "linkedin" };
+      if (/threads\.(?:com|net)\/@/i.test(s)) return { creator: s, network: "threads" };
       const inSlug = s.match(/^\/?in\/([a-z0-9-]{3,100})\/?$/i);
       if (inSlug) return { creator: inSlug[1], network: "linkedin" };
       return { creator: s, network: defaultNet };
@@ -469,7 +484,7 @@ const commands = {
     }
     if (sub === "create" || sub === "add") {
       const defaultNet = flags.network ? String(flags.network).toLowerCase() : "x";
-      if (!["x", "linkedin"].includes(defaultNet)) die("--network must be x or linkedin");
+      if (!["x", "linkedin", "threads"].includes(defaultNet)) die("--network must be x, linkedin, or threads");
       const repeated = process.argv.slice(2).flatMap((v, i, a) => (v === "--creator" && a[i + 1] && !a[i + 1].startsWith("--") ? [a[i + 1]] : []));
       const list = [...(flags.creators ? String(flags.creators).split(/[\s,;]+/) : []), ...repeated].map((x) => x.trim()).filter(Boolean);
       if (!list.length) die('usage: transformer launch create --title "..." --url https://... --launch-date YYYY-MM-DD --creators @a,https://linkedin.com/in/b [--window-hours 24] [--price 200] [--open] [--brief <id>] [--acknowledge-binding] [--accept-usual-price]');

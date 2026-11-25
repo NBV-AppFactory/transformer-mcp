@@ -2,7 +2,7 @@
 
 Free to join and free to send offers. No subscription and no minimum offer. Transformer.gg keeps 20% of each payout; creators keep 80%.
 
-Brands pay per offer, only when a creator accepts, and the payout is released once the Transformer team confirms the post on X. The same split applies to any sales commission.
+Brands pay per offer, only when a creator accepts, and the payout is released once the Transformer team confirms the post. The same split applies to any sales commission.
 
 [Read the docs](https://transformer.gg/docs#quickstart)
 
@@ -10,7 +10,7 @@ Brands pay per offer, only when a creator accepts, and the payout is released on
 
 \# the brand sets the price; this one also pays 10% of tracked sales
 
-Brand pays for one X post $250.00
+Brand pays for one sponsored post $250.00
 
 Creator receives (80%) $200.00
 
@@ -47,13 +47,13 @@ The brand pays only when the creator accepts, and the payout is held until the T
 
 ### Creator posts
 
-The creator writes the post in their own words, with the tracked link and X's Paid partnership label, and submits the post URL.
+The creator writes the post on X or LinkedIn in their own words, with the tracked link and required paid partnership disclosure, and submits the post URL or screenshot.
 
 - 04
 
 ### Confirmed, then paid
 
-Once the Transformer team confirms the post on X, the creator's 80% is credited to their balance and the 20% fee is earned. Creators withdraw from $10.
+Once the Transformer team confirms the post, the creator's 80% is credited to their balance and the 20% fee is earned. Creators withdraw from $10.
 
 ## Pricing questions
 
@@ -61,13 +61,13 @@ How much does Transformer cost?
 
 Nothing up front: no subscription, seats or minimums. The brand sets each offer's payout; the creator receives 80% and Transformer keeps 20%. The same split applies to sales commission.
 
-What does a creator get from a $250 X post?
+What does a creator get from a $250 sponsored post?
 
 $200. The brand pays $250, the creator receives 80% ($200) and the platform fee is 20% ($50). With a 10% commission on sales, each $100 sale adds $10 of commission: $8 to the creator and $2 to the platform.
 
 When is the brand charged, and what if the post never happens?
 
-Sending an offer is free: the brand keeps a card on file, and it's charged only when the creator accepts. The creator posts only after that. The payout is held and released only once the Transformer team confirms the creator's post on X: live, from the right account, with the tracked link and X's Paid partnership label. If a paid offer doesn't go ahead, or a dispute over a post that isn't confirmed is resolved for the brand, the money goes back to the brand's balance for the next offer, and the brand can withdraw the balance on request.
+Sending an offer is free: the brand keeps a card on file, and it's charged only when the creator accepts. The creator posts only after that. The payout is held and released only once the Transformer team confirms the creator's post: live, from the right account, with the tracked link and required paid partnership disclosure (X's Paid partnership label on X). If a paid offer doesn't go ahead, or a dispute over a post that isn't confirmed is resolved for the brand, the money goes back to the brand's balance for the next offer, and the brand can withdraw the balance on request.
 
 How do creators get paid?
 

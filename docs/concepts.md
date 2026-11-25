@@ -2,11 +2,11 @@
 
 ### Workspaces
 
-A workspace is a brand or a creator. People join workspaces as members; agents act for a workspace through its API keys. A creator workspace has one connected X account.
+A workspace is a brand, creator, or agency. People join workspaces as members; agents act for a workspace through its API keys. A creator workspace can connect X and LinkedIn accounts (or work in manual mode).
 
 ### Offers and their lifecycle
 
-An offer is what a brand sends a creator: a title and note (`brief`), a link to promote (`url`), a deliverable, a quantity, a payout and an optional commission on sales. Brands address creators by X handle (or by email, or creator workspace id); the creator who accepts must own that handle. Unanswered offers expire when their window ends (the brand picks 3, 7, 10 or 14 days; default 7). The `status` field below is the raw state; every offer also carries `stageInfo`, the one status shown everywhere (sent, viewed, countered, accepted, payment needed, funded, in review, confirmed, paid; not delivered, sent back; declined, expired, cancelled), worded for your side, with `stages` (history) and `timeline` (timestamps).
+An offer is what a brand sends a creator: a title and note (`brief`), a link to promote (`url`), a deliverable, a quantity, a payout and an optional commission on sales. Brands address creators by handle (X or LinkedIn), email, or creator workspace id. Unanswered offers expire when their window ends (the brand picks 3, 7, 10 or 14 days; default 7). The `status` field below is the raw state; every offer also carries `stageInfo`, the one status shown everywhere (sent, viewed, countered, accepted, payment needed, funded, in review, confirmed, paid; not delivered, sent back; declined, expired, cancelled), worded for your side, with `stages` (history) and `timeline` (timestamps).
 
 stageInfo.key (the status to show)
 
@@ -23,13 +23,13 @@ sent → declined · sent / accepted → cancelled · sent → expired
 - `sent`: the brand created the offer; the creator gets an invite.
 - `accepted`: the creator accepted; a tracked link now exists. The brand's saved card is charged at that moment. If the charge fails, `stage` is `awaiting_payment` (`payment.failure` says why, `funding.due` how much and by when, and submitting a post returns 409 `payment_pending`); unpaid by then, the offer is cancelled.
 - `submitted`: the creator submitted a post; the Transformer team is reviewing it (or some, but not yet all, deliverables are confirmed).
-- `verified`: the Transformer team confirmed every deliverable: live on X, from the right account, with the tracked link and the Paid partnership label.
+- `verified`: the Transformer team confirmed every deliverable: live on X or LinkedIn, from the right account, with the tracked link and required paid partnership disclosure.
 - `paid`: the held payout was released to the creator.
 - `declined` by the creator, `cancelled` by the brand, or `expired` unanswered.
 
 ### Deliverables
 
-`post` (a single X post), `thread` (an X thread) or `video` (an X post with video). `quantity` (1–20) is how many of them the offer covers. X is the first platform; more will follow.
+`post` (a single post on X or LinkedIn), `thread` (an X thread) or `video` (a video post on X or LinkedIn). `quantity` (1-20) is how many of them the offer covers. X and LinkedIn are live today; more platforms are on the way.
 
 ### Tracked links and tf_click
 
@@ -37,7 +37,7 @@ When a creator accepts, the offer gets a tracked link like `https://transformer.
 
 ### The link creators post: postLink
 
-Every offer has a `postLink`, the exact link the creator puts in their post, and `mustInclude`, the list the post check looks for (that link and the disclosure). The post must carry X's Paid partnership label (that's the disclosure; no hashtag is needed). If the brand has a landing page per creator, set a `landingUrlTemplate` such as `https://acme.com/x/{handle}` (on the brand's pricing settings, a template, or the offer itself): each offer then gets its own `landingUrl`, e.g. `https://acme.com/x/demo_creator`, and that is the `postLink`. Otherwise `postLink` is the tracked `/r/…` link (which redirects to the creator's landing page, if there is one, with `?tf_click=` appended). The check accepts the link as X shows it (expanded from t.co), ignoring scheme, `www.`, case, a trailing slash and the query string.
+Every offer has a `postLink`, the exact link the creator puts in their post, and `mustInclude`, the list the post check looks for (that link and the disclosure). On X, the post must carry X's Paid partnership label (on LinkedIn, include a clear paid partnership disclosure such as #sponsored). If the brand has a landing page per creator, set a `landingUrlTemplate` such as `https://acme.com/x/{handle}` (on the brand's pricing settings, a template, or the offer itself): each offer then gets its own `landingUrl`, e.g. `https://acme.com/x/demo_creator`, and that is the `postLink`. Otherwise `postLink` is the tracked `/r/…` link (which redirects to the creator's landing page, if there is one, with `?tf_click=` appended). The check accepts the link as X shows it (expanded from t.co), ignoring scheme, `www.`, case, a trailing slash and the query string.
 
 ### Conversions and commission
 
