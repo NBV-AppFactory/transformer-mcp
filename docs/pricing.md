@@ -20,7 +20,7 @@ each $100 sale $10 commission → $8 creator · $2 fee
 
 ## Included at no cost
 
-The 20% fee is the only charge, whether a person or an agent does the work.
+No subscriptions, seats or API fees, whether a person or an agent does the work.
 
 - The web dashboard for brands and creators
 - Workspace API keys, the REST API, the MCP server and the CLI
@@ -53,7 +53,7 @@ The creator writes the post on X or LinkedIn in their own words, with the tracke
 
 ### Confirmed, then paid
 
-Once the Transformer team confirms the post, the creator's 80% is credited to their balance and the 20% fee is earned. Creators withdraw from $10.
+Once the Transformer team confirms the post, the creator's 80% is credited to their balance and the 20% fee is earned. Creators withdraw from $10 ($1 payout fee for $100+, $5 under $100; or hold balance until $100).
 
 ## Pricing questions
 
@@ -71,7 +71,7 @@ Sending an offer is free: the brand keeps a card on file, and it's charged only 
 
 How do creators get paid?
 
-When the Transformer team confirms a post, the creator's share is credited to their balance. Payouts are by PayPal or USDC (Solana or Base), from $10, usually within 3 business days of a payout request; earnings wait in the balance until then. A W-9 or W-8BEN is needed once a year's payouts reach the tax-form threshold.
+When the Transformer team confirms a post, the creator's share is credited to their balance. Payouts are by PayPal or USDC (Solana or Base), from $10, usually within 3 business days of a payout request. Payout requests carry a $1 platform fee for $100 or more ($5 under $100), deducted from the payout; creators can leave their balance in their account until it reaches $100 or request a payout anytime. A W-9 or W-8BEN is needed once a year's payouts reach the tax-form threshold.
 
 Does it cost more to use the API, MCP server or CLI?
 

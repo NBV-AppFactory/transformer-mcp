@@ -3,7 +3,7 @@
 // Key: TRANSFORMER_API_KEY, or `transformer login` (stored in ~/.config/transformer/config.json).
 import { mkdirSync, readFileSync, writeFileSync, chmodSync } from "node:fs";
 import { homedir } from "node:os";
-import { join } from "node:path";
+import { basename, join, resolve, sep } from "node:path";
 import { createInterface } from "node:readline/promises";
 
 const CONFIG = join(homedir(), ".config", "transformer", "config.json");
@@ -30,8 +30,32 @@ for (let i = 0; i < rest.length; i++) {
 const flagOn = (k) => k in flags && flags[k] !== "false";
 const json = flagOn("json");
 
+const LOOPBACK_HOSTS = new Set(["localhost", "127.0.0.1", "::1", "[::1]"]);
+function assertSafeBaseUrl(base) {
+  let url;
+  try {
+    url = new URL(base);
+  } catch {
+    die(`Invalid base URL: ${base}`);
+  }
+  if (url.protocol === "https:") return;
+  if (url.protocol === "http:" && LOOPBACK_HOSTS.has(url.hostname.toLowerCase())) return;
+  die(`Refusing to send API key over non-HTTPS URL: ${base} (use https://, or http:// only for loopback)`);
+}
+function safeOutPath(outDir, filename) {
+  const raw = String(filename ?? "");
+  const safeName = basename(raw.replace(/\\/g, "/"));
+  if (!safeName || safeName === "." || safeName === ".." || safeName.includes("\0")) die(`Unsafe asset filename: ${filename}`);
+  const root = resolve(outDir);
+  const target = resolve(root, safeName);
+  const prefix = root.endsWith(sep) ? root : root + sep;
+  if (target === root || !target.startsWith(prefix)) die(`Unsafe asset filename: ${filename}`);
+  return target;
+}
+
 async function call(method, path, body) {
   if (!KEY) die(`No API key. Run: transformer login   (create a key on a workspace page at ${BASE}/dashboard)`);
+  assertSafeBaseUrl(BASE);
   const res = await fetch(`${BASE}/api/v1${path}`, {
     method, headers: { Authorization: `Bearer ${KEY}`, ...(body && { "Content-Type": "application/json" }) }, body: body && JSON.stringify(body),
   });
@@ -72,6 +96,8 @@ const offerCard = ({ offer: o }) => {
 
 const balanceLine = (d) => {
   console.log(`available ${usd(d.availableUsd)} · requested ${usd(d.requestedUsd)} · paid ${usd(d.paidUsd)} (this year ${usd(d.paidThisYearUsd)}) · pending ${usd(d.pendingUsd)}`);
+  const pf = d.payoutFee ?? { thresholdUsd: 100, atOrOverUsd: 1, underUsd: 5 };
+  console.log(`  payout fee: $${pf.atOrOverUsd} for $${pf.thresholdUsd}+, $${pf.underUsd} under $${pf.thresholdUsd} (min $${d.minPayoutUsd ?? 10}; leave funds until $${pf.thresholdUsd} or request anytime)`);
   if (d.taxFormRequired) console.log(`  a tax form is needed before payouts reach $${d.thresholdUsd} this year: transformer tax-form submit --file form.json`);
 };
 const rate = (n) => (n.engagement?.engagementRatePercent != null ? `${n.engagement.engagementRatePercent}% eng` : "");
@@ -86,14 +112,15 @@ const networkCard = (n) => {
 
 const commands = {
   async login() {
+    assertSafeBaseUrl(BASE);
     const rl = createInterface({ input: process.stdin, output: process.stdout });
     const key = (flags.key || (await rl.question(`API key from ${BASE}/dashboard (workspace page → Agent API keys): `))).trim();
     rl.close();
     const res = await fetch(`${BASE}/api/v1/me`, { headers: { Authorization: `Bearer ${key}` } });
     if (!res.ok) die("That key didn't work.");
     const me = await res.json();
-    mkdirSync(join(homedir(), ".config", "transformer"), { recursive: true });
-    writeFileSync(CONFIG, JSON.stringify({ apiKey: key, baseUrl: BASE }, null, 2));
+    mkdirSync(join(homedir(), ".config", "transformer"), { recursive: true, mode: 0o700 });
+    writeFileSync(CONFIG, JSON.stringify({ apiKey: key, baseUrl: BASE }, null, 2), { mode: 0o600 });
     chmodSync(CONFIG, 0o600);
     console.log(`✓ signed in as ${me.workspace.kind} workspace "${me.workspace.name}"`);
   },
@@ -378,12 +405,13 @@ const commands = {
   },
   async payout() {
     const sub = args[0] || "list";
+    const feeNote = (r) => (r.feeUsd != null ? ` (fee ${usd(r.feeUsd)}, net ${usd(r.netUsd ?? Math.max(0, r.amountUsd - r.feeUsd))})` : "");
     if (sub === "list") return out(await call("GET", "/payout-requests"), (d) =>
-      d.requests.length ? d.requests.forEach((r) => console.log(`${r.id}  ${r.status.padEnd(9)} ${usd(r.amountUsd).padStart(8)}  ${r.method.masked}${r.reference ? `  ref ${r.reference}` : ""}${r.rejectReason ? `  (${r.rejectReason})` : ""}`)) : console.log("No payout requests."));
+      d.requests.length ? d.requests.forEach((r) => console.log(`${r.id}  ${r.status.padEnd(9)} ${usd(r.amountUsd).padStart(8)}${feeNote(r)}  ${r.method.masked}${r.reference ? `  ref ${r.reference}` : ""}${r.rejectReason ? `  (${r.rejectReason})` : ""}`)) : console.log("No payout requests."));
     if (sub === "request") return out(await call("POST", "/payout-requests", { amountUsd: flags.amount ? Number(flags.amount) : undefined, methodId: flags.method }), (d) =>
-      console.log(`✓ requested ${usd(d.request.amountUsd)} to ${d.request.method.masked}${d.request.flagged ? " (held for review: payout method changed in the last 24 h)" : ""}: ${d.request.id}`));
+      console.log(`✓ requested ${usd(d.request.amountUsd)}${feeNote(d.request)} to ${d.request.method.masked}${d.request.flagged ? " (held for review: payout method changed in the last 24 h)" : ""}: ${d.request.id}`));
     if (sub === "cancel" && args[1]) return out(await call("POST", `/payout-requests/${args[1]}/cancel`), () => console.log("✓ cancelled; the amount is available again"));
-    die("usage: transformer payout list | request [--amount 40] [--method <id>] | cancel <id>");
+    die("usage: transformer payout list | request [--amount 40] [--method <id>] | cancel <id>   (min $10; $1 fee at $100+, $5 under $100)");
   },
   async "tax-form"() {
     if ((args[0] || "show") === "show") return out(await call("GET", "/tax-form"), (d) =>
@@ -742,15 +770,19 @@ const commands = {
     if (sub === "caption" && args[1] && args[2]) return out(await call("PATCH", `/persona-posts/${args[1]}`, { caption: args[2] }), (d) => console.log(`✓ ${d.post.caption}`));
     if (sub === "pack" && args[1]) {
       const d = await call("GET", `/persona-posts/${args[1]}/pack`);
+      const savedPaths = new Map();
       if (flags.out) {
-        const { mkdirSync: mk, writeFileSync: wr } = await import("node:fs");
-        mk(flags.out, { recursive: true });
-        for (const a of d.assets) wr(join(flags.out, a.filename), Buffer.from(await (await fetch(a.url)).arrayBuffer()));
-        wr(join(flags.out, "caption.txt"), d.caption + "\n");
+        mkdirSync(flags.out, { recursive: true });
+        for (const a of d.assets) {
+          const dest = safeOutPath(flags.out, a.filename);
+          writeFileSync(dest, Buffer.from(await (await fetch(a.url)).arrayBuffer()));
+          savedPaths.set(a, dest);
+        }
+        writeFileSync(safeOutPath(flags.out, "caption.txt"), d.caption + "\n");
       }
       return out(d, () => {
         console.log(`caption (paste exactly):\n${d.caption}\n`);
-        d.assets.forEach((a) => console.log(`${flags.out ? `saved ${join(flags.out, a.filename)}` : a.url}`));
+        d.assets.forEach((a) => console.log(`${flags.out ? `saved ${savedPaths.get(a)}` : a.url}`));
         Object.values(d.instructions).forEach((t) => console.log(`\n${t}`));
       });
     }
@@ -960,7 +992,7 @@ const commands = {
   submit <id> <x-post-url>      verify a post you made on X with your tracked link (creator)
   earnings | balance            what you've earned and can request (creator)
   methods list | add --type wise --name … --email … --country GB --currency GBP | default <id> | remove <id>
-  payout list | request [--amount 40] [--method <id>] | cancel <id>
+  payout list | request [--amount 40] [--method <id>] | cancel <id>   (min $10; $1 fee at $100+, $5 under $100)
   tax-form show | submit --file form.json      W-9 or W-8BEN (needed above the yearly threshold)
   questions list [--status new] [--source …] [--since date] | show <id> | plan|publish|skip <id> [--url …] | status   (admin keys)
   admin-payouts list [--status …] | paid <id> --reference … [--fee 0]   (admin keys)
