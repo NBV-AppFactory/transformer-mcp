@@ -6,18 +6,7 @@
   "social": {
     "github": "NBV-AppFactory/transformer-mcp"
   },
-  "navigation": [
-    {
-      "group": "Documentation",
-      "pages": [
-        "index",
-        "quickstart",
-        "mcp",
-        "concepts",
-        "pricing",
-        "rest",
-        "tracking"
-      ]
-    }
+  "sidebar": [
+    ["Transformer.gg", "/"]
   ]
 }
