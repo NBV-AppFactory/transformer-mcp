@@ -1,0 +1,23 @@
+{
+  "$schema": "https://docs.page/schema.json",
+  "name": "Transformer.gg",
+  "description": "Book sponsored posts from X creators, from a dashboard or your AI agent.",
+  "logo": "https://transformer.gg/assets/transformer-512.png",
+  "social": {
+    "github": "NBV-AppFactory/transformer-mcp"
+  },
+  "navigation": [
+    {
+      "group": "Documentation",
+      "pages": [
+        "index",
+        "quickstart",
+        "mcp",
+        "concepts",
+        "pricing",
+        "rest",
+        "tracking"
+      ]
+    }
+  ]
+}
