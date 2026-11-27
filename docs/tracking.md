@@ -84,7 +84,7 @@ async function reportConversion(order: { id: string; totalUsd: number; tfClick: 
   const res = await fetch("https://transformer.gg/api/v1/conversions", {
     method: "POST",
     headers: {
-      Authorization: `Bearer ${process.env.TRANSFORMER_API_KEY}`, // brand workspace key
+      Authorization: `Bearer ${process.env.TRANSFORMER_API_KEY}`, // brand API key
       "Content-Type": "application/json",
     },
     body: JSON.stringify({ clickId: order.tfClick, amountUsd: order.totalUsd, orderId: order.id }),
@@ -106,7 +106,7 @@ server
 const res = await fetch("https://transformer.gg/api/v1/visits", {
   method: "POST",
   headers: {
-    Authorization: `Bearer ${process.env.TRANSFORMER_API_KEY}`, // brand workspace key
+    Authorization: `Bearer ${process.env.TRANSFORMER_API_KEY}`, // brand API key
     "Content-Type": "application/json",
   },
   body: JSON.stringify({ handle: req.params.handle, clickId: req.query.tf_click, ip: req.ip, userAgent: req.get("user-agent"), referrer: req.get("referer") }),
@@ -128,7 +128,7 @@ curl https://transformer.gg/api/v1/conversions \
 
 ### Older landing-page pixel
 
-Before the Transformer pixel there was a 1×1 image for per-creator landing pages, and it still works. Use the Transformer pixel above for new sites. To use the image, put it on the landing page. Each load counts as a visit to that creator's live offer (bots and link previews aren't counted). Use your brand workspace's slug and the creator's handle:
+Before the Transformer pixel there was a 1×1 image for per-creator landing pages, and it still works. Use the Transformer pixel above for new sites. To use the image, put it on the landing page. Each load counts as a visit to that creator's live offer (bots and link previews aren't counted). Use your brand's slug and the creator's handle:
 
 landing page (HTML)
 

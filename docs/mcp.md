@@ -1,6 +1,6 @@
 ## MCP
 
-Transformer runs an MCP server at `https://transformer.gg/mcp` over streamable HTTP, authenticated with the same workspace key. Add it to any MCP client:
+Transformer runs an MCP server at `https://transformer.gg/mcp` over streamable HTTP, authenticated with the same API key. Add it to any MCP client:
 
 [Add to Cursor](cursor://anysphere.cursor-deeplink/mcp/install?name=transformer&config=eyJ1cmwiOiJodHRwczovL3RyYW5zZm9ybWVyLmdnL21jcCJ9) Opens Cursor with Transformer's MCP server filled in.
 
@@ -8,7 +8,7 @@ Transformer runs an MCP server at `https://transformer.gg/mcp` over streamable H
 
 Add a remote (custom) MCP server with the URL `https://transformer.gg/mcp`. In Claude: Settings → Connectors → Add custom connector. In ChatGPT: Settings → Apps & Connectors → Create (developer mode). In VS Code: MCP: Add Server → HTTP.
 
-Sign-in is OAuth: the first time, your client opens Transformer in the browser. Sign in, choose the brand or creator workspace it may act for, and approve. No key to copy; disconnect it any time in Settings → Agents. Clients without OAuth use a workspace API key as a bearer token, as in the config below.
+Sign-in is OAuth: the first time, your client opens Transformer in the browser. Sign in, choose the brand or creator profile it may act for, and approve. No key to copy; disconnect it any time in Settings → Agents. Clients without OAuth use an API key as a bearer token, as in the config below.
 
 mcp.json
 
@@ -35,7 +35,7 @@ claude mcp add --transport http transformer https://transformer.gg/mcp --header 
 
 | Tool | Key | What it does |
 | --- | --- | --- |
-| whoami | either | The workspace this key acts for (brand or creator). |
+| whoami | either | The brand or creator profile this key acts for. |
 | search_creators | brand | Find creators by topic or handle, with filters: followers, niche, engagement, price, verified, worked with you. |
 | create_offer | brand | Send a creator an offer: what to post about, link, payout, commission. |
 | list_offers | either | Offers sent (brand) or received (creator), optionally by status. |
@@ -57,14 +57,14 @@ Tool inputs mirror the REST request bodies below: offer tools take an `offerId`,
 
 ## CLI
 
-Install the `transformer` binary, then sign in with a workspace API key:
+Install the `transformer` binary, then sign in with an API key:
 
 $ curl -fsSL https://transformer.gg/install | sh
 
 commands
 
 ```
-transformer login                 # paste a workspace API key
+transformer login                 # paste an account API key
 transformer me
 transformer creators search fitness
 transformer offers create --creator @demo_creator --deliverable post --payout 250 --url https://acme.com/launch --brief "Share what you think of Acme"

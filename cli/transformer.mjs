@@ -79,13 +79,26 @@ const creatorOf = (o) => {
     if (thHandle) return thHandle;
     if (o.creator?.name) return o.creator.name;
   }
-  return o.creator?.x || (o.creator?.linkedin ? `in/${o.creator.linkedin}` : null) || o.creator?.threads || o.creator?.name || o.creator?.email || o.brand?.name || "";
+  if (o.network === "instagram") {
+    const igSocial = (o.creator?.socials ?? []).find((s) => s.provider === "instagram")?.handle;
+    const igHandle = o.creator?.instagram || (igSocial ? `@${igSocial}` : null);
+    if (igHandle) return igHandle;
+    if (o.creator?.name) return o.creator.name;
+  }
+  return o.creator?.x || o.creator?.instagram || (o.creator?.linkedin ? `in/${o.creator.linkedin}` : null) || o.creator?.threads || o.creator?.name || o.creator?.email || o.brand?.name || "";
 };
 const offerLine = (o) => `${o.id}  ${o.status.padEnd(9)} ${usd(o.payoutUsd).padStart(7)}  ${(o.network && o.network !== "x" ? `${o.network}:${o.deliverable}` : o.deliverable).padEnd(13)} ${creatorOf(o).padEnd(20)} ${o.title}`;
 const offerCard = ({ offer: o }) => {
-  console.log(`✓ ${o.title}  [${o.status}]  ${usd(o.payoutUsd)}${o.commissionPercent ? ` + ${o.commissionPercent}% of sales` : ""}`);
+  const headlineUsd = o.brandTotal ?? o.payoutUsd ?? o.creatorAmount ?? 0;
+  console.log(`✓ ${o.title}  [${o.status}]  ${usd(headlineUsd)}${o.commissionPercent ? ` + ${o.commissionPercent}% of sales` : ""}`);
   if (o.network && o.network !== "x") console.log(`  network     ${o.network}`);
-  if (o.creatorEarnsUsd != null) console.log(`  creator     earns ${usd(o.creatorEarnsUsd)}${o.creatorCommissionPercent ? ` + ${o.creatorCommissionPercent}% of sales` : ""} (platform fee ${o.platformFeePercent}%)`);
+  const creatorNet = o.creatorAmount ?? o.creatorEarnsUsd;
+  if (creatorNet != null) {
+    const feePart = o.feeAmount != null
+      ? ` (brand total ${usd(o.brandTotal ?? o.payoutUsd)}, fee ${usd(o.feeAmount)}${o.platformFeePercent != null ? ` / ${o.platformFeePercent}%` : ""})`
+      : o.platformFeePercent != null ? ` (platform fee ${o.platformFeePercent}%)` : "";
+    console.log(`  creator     gets ${usd(creatorNet)}${o.creatorCommissionPercent ? ` + ${o.creatorCommissionPercent}% of sales` : ""}${feePart}`);
+  }
   console.log(`  id          ${o.id}`);
   if (o.trackedUrl) console.log(`  tracked     ${o.trackedUrl}`);
   console.log(`  invite      ${o.inviteUrl}`);
@@ -269,14 +282,18 @@ const commands = {
     }
     die("usage: transformer profile show|list|hide|remove | set [--headline …] [--niches ai,devtools] [--post 250] [--thread none] [--open false]\n       transformer profile audience [show|set <field> <value>|remove <field>|reset <field>|hide|unhide|reviewed|rebuild]");
   },
-  // Send offers (pay on accept): transformer offer --url https://… --creator <profileId|@handle> --price 125 --ask "…" [--creator … --price … --ask …] [--days 7]
+  // Send offers (pay on accept): transformer offer --url https://… --creator <profileId|@handle> --creator-amount 50 --ask "…" [--brand-total 62.50 | --price 62.50] [--days 7]
   async offer() {
     const pick = (k) => process.argv.slice(2).flatMap((v, i, a) => (v === `--${k}` && a[i + 1] ? [a[i + 1]] : []));
-    const creators = pick("creator"), prices = pick("price"), asks = pick("ask"), posts = pick("post");
-    if (!flags.url || !creators.length || creators.length !== prices.length || creators.length !== asks.length) die('usage: transformer offer --url https://… --creator <profileId|@handle> --price 125 --ask "…" (repeat --creator/--price/--ask for each creator) [--days 7]');
-    const items = creators.map((c, i) => ({ ...(/^[0-9a-f-]{36}$/i.test(c) ? { profileId: c } : { creator: c }), priceUsd: Number(prices[i]), ask: asks[i], ...(posts[i] ? { post: posts[i] } : {}), ...(flags.days ? { expiresInDays: Number(flags.days) } : {}) }));
+    const creators = pick("creator"), creatorAmounts = pick("creator-amount"), brandTotals = pick("brand-total"), prices = pick("price"), asks = pick("ask"), posts = pick("post");
+    const priceSources = [creatorAmounts.length > 0, brandTotals.length > 0, prices.length > 0].filter(Boolean).length;
+    if (priceSources > 1) die("use only one of --creator-amount, --brand-total, or --price");
+    const activePrices = creatorAmounts.length ? creatorAmounts : brandTotals.length ? brandTotals : prices;
+    const priceKey = creatorAmounts.length ? "creatorAmountUsd" : brandTotals.length ? "brandTotalUsd" : "priceUsd";
+    if (!flags.url || !creators.length || creators.length !== activePrices.length || creators.length !== asks.length) die('usage: transformer offer --url https://… --creator <profileId|@handle> --creator-amount 50 --ask "…" (or --brand-total / legacy --price; repeat per creator) [--days 7]');
+    const items = creators.map((c, i) => ({ ...(/^[0-9a-f-]{36}$/i.test(c) ? { profileId: c } : { creator: c }), [priceKey]: Number(activePrices[i]), ask: asks[i], ...(posts[i] ? { post: posts[i] } : {}), ...(flags.days ? { expiresInDays: Number(flags.days) } : {}) }));
     return out(await call("POST", "/offers/batch", { url: flags.url, items }), (d) => {
-      console.log(`✓ ${d.offerIds.length} offer${d.offerIds.length === 1 ? "" : "s"} sent · $${d.totalUsd} if all accept · nothing charged now`);
+      console.log(`✓ ${d.offerIds.length} offer${d.offerIds.length === 1 ? "" : "s"} sent · $${d.brandTotal ?? d.totalUsd} brand total (creators get $${d.creatorAmount ?? d.totalUsd}, fee $${d.feeAmount ?? 0}) · nothing charged now`);
       console.log(d.message);
       console.log("  → when a creator accepts, pay within 72 hours: transformer pay [offer-id…]");
     });
@@ -289,19 +306,28 @@ const commands = {
     if (sub === "create") {
       // Fields left out come from --template (if given) or the server defaults.
       const net = flags.network ? String(flags.network).toLowerCase() : undefined;
-      if (net && !["x", "linkedin", "threads"].includes(net)) die("--network must be x, linkedin, or threads");
+      if (net && !["x", "linkedin", "threads", "instagram"].includes(net)) die("--network must be x, linkedin, threads, or instagram");
       const inferredNet = net ?? (
         flags.creator && (/linkedin\.com\/in\//i.test(flags.creator) || /^\/?in\//i.test(flags.creator))
           ? "linkedin"
           : flags.creator && /threads\.(?:com|net)\/@/i.test(flags.creator)
             ? "threads"
-            : undefined
+            : flags.creator && /instagram\.com\//i.test(flags.creator)
+              ? "instagram"
+              : undefined
       );
       const acceptUsual = flagOn("accept-usual-price");
+      const priceFlagsGiven = [flags["creator-amount"], flags["brand-total"], flags.payout].filter((v) => v !== undefined).length;
+      if (priceFlagsGiven > 1) die("use only one of --creator-amount, --brand-total, or --payout");
       const fields = {
         templateId: flags.template, title: flags.title, brief: flags.brief, url: flags.url, deliverable: flags.deliverable,
-        quantity: flags.quantity && Number(flags.quantity), payoutUsd: flags.payout && Number(flags.payout), commissionPercent: flags.commission && Number(flags.commission),
+        quantity: flags.quantity && Number(flags.quantity),
+        ...(flags["creator-amount"] !== undefined ? { creatorAmountUsd: Number(flags["creator-amount"]) } : {}),
+        ...(flags["brand-total"] !== undefined ? { brandTotalUsd: Number(flags["brand-total"]) } : {}),
+        ...(flags.payout !== undefined ? { payoutUsd: Number(flags.payout) } : {}),
+        commissionPercent: flags.commission && Number(flags.commission),
         ...(inferredNet ? { network: inferredNet } : {}),
+        ...(flags["promo-code"] ? { promoCode: flags["promo-code"] } : {}),
         ...(flags.days ? { expiresInDays: Number(flags.days) } : {}),
         ...(flags.email ? { email: flags.email } : {}),
         ...("acknowledge-binding" in flags && { acknowledgeBinding: flagOn("acknowledge-binding") }),
@@ -311,13 +337,13 @@ const commands = {
       };
       if (!flags.template) {
         if (!flags.url) die("--url is required (or use --template <id>)");
-        if (!flags.payout && !acceptUsual) die("--payout is required (or use --template <id> or --accept-usual-price)");
+        if (priceFlagsGiven === 0 && !acceptUsual) die("--creator-amount, --brand-total, or --payout is required (or use --template <id> or --accept-usual-price)");
         fields.title ??= "Sponsored post";
       }
       // Many creators: --creators @a,@b,@c or --csv file (first column = handle/email; a "creator" header row is skipped).
       if (flags.creators || flags.csv) {
-        if (inferredNet === "linkedin" || inferredNet === "threads") die("--creators / --csv bulk offers are X-only; use `transformer launch create --creators ...` for multi-creator LinkedIn or Threads offers");
-        if (!flags.template && !flags.payout) die("--payout is required for bulk --creators / --csv offers (or use --template <id>)");
+        if (inferredNet === "linkedin" || inferredNet === "threads" || inferredNet === "instagram") die("--creators / --csv bulk offers are X-only; use `transformer launch create --creators ...` for multi-creator LinkedIn, Threads, or Instagram offers");
+        if (!flags.template && priceFlagsGiven === 0) die("--creator-amount, --brand-total, or --payout is required for bulk --creators / --csv offers (or use --template <id>)");
         let list = flags.creators ? String(flags.creators).split(/[\s,;]+/) : [];
         if (flags.csv) {
           const { readFileSync } = await import("node:fs");
@@ -485,10 +511,13 @@ const commands = {
       if (liPref) return { creator: liPref[1].trim().replace(/^\/?in\//i, "").replace(/\/+$/, ""), network: "linkedin" };
       const thPref = s.match(/^(?:threads|th):(.+)$/i);
       if (thPref) return { creator: thPref[1].trim(), network: "threads" };
+      const igPref = s.match(/^(?:instagram|ig):(.+)$/i);
+      if (igPref) return { creator: igPref[1].trim(), network: "instagram" };
       const xPref = s.match(/^x:(.+)$/i);
       if (xPref) return { creator: xPref[1].trim(), network: "x" };
       if (/linkedin\.com\/in\//i.test(s)) return { creator: s, network: "linkedin" };
       if (/threads\.(?:com|net)\/@/i.test(s)) return { creator: s, network: "threads" };
+      if (/instagram\.com\//i.test(s)) return { creator: s, network: "instagram" };
       const inSlug = s.match(/^\/?in\/([a-z0-9-]{3,100})\/?$/i);
       if (inSlug) return { creator: inSlug[1], network: "linkedin" };
       return { creator: s, network: defaultNet };
@@ -512,20 +541,25 @@ const commands = {
     }
     if (sub === "create" || sub === "add") {
       const defaultNet = flags.network ? String(flags.network).toLowerCase() : "x";
-      if (!["x", "linkedin", "threads"].includes(defaultNet)) die("--network must be x, linkedin, or threads");
+      if (!["x", "linkedin", "threads", "instagram"].includes(defaultNet)) die("--network must be x, linkedin, threads, or instagram");
       const repeated = process.argv.slice(2).flatMap((v, i, a) => (v === "--creator" && a[i + 1] && !a[i + 1].startsWith("--") ? [a[i + 1]] : []));
       const list = [...(flags.creators ? String(flags.creators).split(/[\s,;]+/) : []), ...repeated].map((x) => x.trim()).filter(Boolean);
-      if (!list.length) die('usage: transformer launch create --title "..." --url https://... --launch-date YYYY-MM-DD --creators @a,https://linkedin.com/in/b [--window-hours 24] [--price 200] [--open] [--brief <id>] [--acknowledge-binding] [--accept-usual-price]');
+      if (!list.length) die('usage: transformer launch create --title "..." --url https://... --launch-date YYYY-MM-DD --creators @a,https://linkedin.com/in/b [--window-hours 24] [--creator-amount 200 | --brand-total 250 | --price 250] [--open] [--brief <id>] [--acknowledge-binding] [--accept-usual-price]');
       const briefId = sub === "add" ? (args[1] || flags.brief) : flags.brief;
-      if (sub === "add" && !briefId) die("usage: transformer launch add <briefId> --creators @a,https://linkedin.com/in/b [--price 200] [--acknowledge-binding]");
+      if (sub === "add" && !briefId) die("usage: transformer launch add <briefId> --creators @a,https://linkedin.com/in/b [--creator-amount 200 | --brand-total 250 | --price 250] [--acknowledge-binding]");
       if (!briefId) {
         for (const k of ["title", "url", "launch-date"]) if (!flags[k]) die(`--${k} is required (or pass --brief <id> to add creators to an existing launch package)`);
       }
       const priceRaw = flags.price ?? flags.payout;
+      const launchPriceCount = [flags["creator-amount"], flags["brand-total"], priceRaw].filter((v) => v != null).length;
+      if (launchPriceCount > 1) die("use only one of --creator-amount, --brand-total, or --price/--payout");
       const items = list.map((raw) => ({
         ...parseLaunchItem(raw, defaultNet),
+        ...(flags["creator-amount"] != null ? { creatorAmountUsd: Number(flags["creator-amount"]) } : {}),
+        ...(flags["brand-total"] != null ? { brandTotalUsd: Number(flags["brand-total"]) } : {}),
         ...(priceRaw != null ? { priceUsd: Number(priceRaw) } : {}),
         ...(flags["expected-price"] ? { expectedPriceUsd: Number(flags["expected-price"]) } : {}),
+        ...(flags["promo-code"] ? { promoCode: flags["promo-code"] } : {}),
         ...(flags.ask ? { ask: flags.ask } : {}),
         ...(flags.days ? { expiresInDays: Number(flags.days) } : {}),
       }));
@@ -580,7 +614,7 @@ const commands = {
     });
     const fields = () => {
       const f = {};
-      for (const [k, v] of Object.entries({ title: "title", product: "product", description: "description", url: "url", landing: "landingUrlTemplate", deliverable: "deliverable", deadline: "deadline", status: "status", pricing: "pricing", type: "campaignType", "launch-date": "launchDate" })) if (flags[k]) f[v] = flags[k];
+      for (const [k, v] of Object.entries({ title: "title", product: "product", description: "description", url: "url", landing: "landingUrlTemplate", network: "network", deliverable: "deliverable", deadline: "deadline", status: "status", pricing: "pricing", type: "campaignType", "launch-date": "launchDate" })) if (flags[k]) f[v] = flags[k];
       for (const [k, v] of Object.entries({ points: "talkingPoints", avoid: "avoid", must: "mustHaves" })) if (flags[k]) f[v] = String(flags[k]).split("|").map((x) => x.trim()).filter(Boolean);
       if (flags.receives) f.creatorReceivesUsd = Number(flags.receives);
       if (flags.payout) f.payoutUsd = Number(flags.payout);
@@ -847,10 +881,15 @@ const commands = {
       console.log(`${d.count} drafts · ${usd(d.totalPayoutUsd)} total`);
     });
     if (sub === "create") {
-      if (!flags.creators) die("usage: transformer drafts create --creators @a,@b [--template <id>] [--url …] [--title …] [--payout 100] [--label …]");
+      if (!flags.creators) die("usage: transformer drafts create --creators @a,@b [--template <id>] [--url …] [--title …] [--creator-amount 80 | --brand-total 100 | --payout 100] [--label …]");
+      const draftPriceCount = [flags["creator-amount"], flags["brand-total"], flags.payout].filter((v) => v !== undefined).length;
+      if (draftPriceCount > 1) die("use only one of --creator-amount, --brand-total, or --payout");
       return out(await call("POST", "/drafts", {
         creators: String(flags.creators).split(/[\s,;]+/).filter(Boolean), label: flags.label, templateId: flags.template, url: flags.url, title: flags.title,
-        brief: flags.brief, payoutUsd: flags.payout && Number(flags.payout),
+        brief: flags.brief,
+        ...(flags["creator-amount"] !== undefined ? { creatorAmountUsd: Number(flags["creator-amount"]) } : {}),
+        ...(flags["brand-total"] !== undefined ? { brandTotalUsd: Number(flags["brand-total"]) } : {}),
+        ...(flags.payout !== undefined ? { payoutUsd: Number(flags.payout) } : {}),
       }), (d) => {
         console.log(`✓ batch "${d.batch.label}" (${d.batch.id}): ${d.drafted} drafted, ${d.failed} skipped`);
         for (const r of d.results.filter((r) => !r.ok)) console.log(`  ${r.creator.padEnd(20)} ✗ ${r.error}`);
@@ -858,7 +897,16 @@ const commands = {
         console.log("  → review, then: transformer drafts approve --batch " + d.batch.id);
       });
     }
-    if (sub === "edit" && args[1]) return out(await call("PATCH", `/drafts/${args[1]}`, { payoutUsd: flags.payout && Number(flags.payout), pitchText: flags.pitch, title: flags.title, brief: flags.brief }), (d) => console.log(draftLine(d.draft ?? { ...d.offer, offerId: d.offer?.id })));
+    if (sub === "edit" && args[1]) {
+      const editPriceCount = [flags["creator-amount"], flags["brand-total"], flags.payout].filter((v) => v !== undefined).length;
+      if (editPriceCount > 1) die("use only one of --creator-amount, --brand-total, or --payout");
+      return out(await call("PATCH", `/drafts/${args[1]}`, {
+        ...(flags["creator-amount"] !== undefined ? { creatorAmountUsd: Number(flags["creator-amount"]) } : {}),
+        ...(flags["brand-total"] !== undefined ? { brandTotalUsd: Number(flags["brand-total"]) } : {}),
+        ...(flags.payout !== undefined ? { payoutUsd: Number(flags.payout) } : {}),
+        pitchText: flags.pitch, title: flags.title, brief: flags.brief,
+      }), (d) => console.log(draftLine(d.draft ?? { ...d.offer, offerId: d.offer?.id })));
+    }
     if (sub === "approve" || sub === "discard") {
       const body = flags.batch ? { batchId: flags.batch } : { offerIds: args.slice(1) };
       if (!flags.batch && !args[1]) die(`usage: transformer drafts ${sub} <offer-id…> | --batch <id>`);
@@ -872,7 +920,7 @@ const commands = {
   },
   async pricing() {
     out(await call("GET", "/pricing"), (d) => {
-      for (const t of d.tiers) console.log(`${t.label.padEnd(12)} ${String(t.minFollowers).padStart(8)}+ followers  ${t.payoutUsd == null ? "custom" : `${usd(t.payoutUsd)} → creator ${usd(t.creatorEarnsUsd)}`}`);
+      for (const t of d.tiers) console.log(`${t.label.padEnd(12)} ${String(t.minFollowers).padStart(8)}+ followers  ${t.payoutUsd == null ? "custom" : `${usd(t.brandTotal ?? t.payoutUsd)} → creator ${usd(t.creatorAmount ?? t.creatorEarnsUsd)}`}`);
       console.log(`\npitch template: ${d.pitchTemplate ?? "(none: Transformer's standard invite DM)"}`);
     });
   },
@@ -914,8 +962,13 @@ const commands = {
     die("publishing from the CLI was removed: post on X yourself (with your tracked link and #ad), then run: transformer submit <offer-id> <x-post-url>");
   },
   async submit() {
-    if (!args[0] || !args[1]) die("usage: transformer submit <offer-id> <x-post-url>");
-    out(await call("POST", `/offers/${args[0]}/submissions`, { url: args[1] }), offerCard);
+    if (!args[0]) die("usage: transformer submit <offer-id> [post-url] [--paid-partnership-label] [--note …]");
+    const body = {
+      ...(args[1] ? { url: args[1] } : {}),
+      ...(flags.note ? { note: flags.note } : {}),
+      ...("paid-partnership-label" in flags ? { paidPartnershipLabel: flagOn("paid-partnership-label") } : {}),
+    };
+    out(await call("POST", `/offers/${args[0]}/submissions`, body), offerCard);
   },
   async conversions() {
     if (args[0] !== "report") die("usage: transformer conversions report --click <tf_click> --amount 49 --order A-1001");
@@ -956,11 +1009,11 @@ const commands = {
   profile list | hide | remove  show in / hide from / delete from the directory (creator)
   profile set [--headline …] [--niches ai,devtools] [--post 250] [--thread none] [--video 900] [--open false]
   offers list [--status sent]   offers sent (brand) or received (creator)
-  offers create --creator @jane --url https://… --payout 250 [--network x|linkedin] [--deliverable post|thread|video]
+  offers create --creator @jane --url https://… --creator-amount 50 [--brand-total 62.5 | --payout 62.5] [--network x|linkedin] [--deliverable post|thread|video]
                 [--quantity 1] [--title …] [--brief …] [--commission 10] [--template <id>] [--acknowledge-binding] [--accept-usual-price] [--allow-ai]
   launch list | show <briefId>  your coordinated launch packages (brand)
   launch create --title "…" --url https://… --launch-date YYYY-MM-DD --creators @a,https://linkedin.com/in/b
-                [--window-hours 24] [--price 200] [--open] [--brief <id>] [--acknowledge-binding] [--accept-usual-price]
+                [--window-hours 24] [--creator-amount 200 | --brand-total 250 | --price 250] [--open] [--brief <id>] [--acknowledge-binding] [--accept-usual-price]
                                 coordinate X and LinkedIn creators for one launch window (brand)
   pay [offer-id…]               pay for accepted offers (all waiting when no ids): balance first, then a checkout link (brand)
   posts --creator <id|@h>       suggested X post per creator, in their voice ({link} + #ad) (brand)

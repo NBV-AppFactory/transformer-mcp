@@ -4,7 +4,7 @@ Base URL `https://transformer.gg/api/v1`. Requests and responses are JSON. Amoun
 
 GET `/api/v1/me` brand or creator key
 
-The workspace this key acts for, its connected social accounts (creators) and totals. Use it to check whether you're on the brand or creator side.
+The brand or creator profile this key acts for, its connected social accounts (creators) and totals. Use it to check whether you're on the brand or creator side.
 
 Request
 
@@ -73,13 +73,15 @@ Send a creator an offer. Returns `201`. Share `inviteUrl` with the creator if th
 
 | Field | Type | Description |
 | --- | --- | --- |
-| creator | string | The creator's handle ("@demo_creator"), an email address, or a creator workspace id. |
+| creator | string | The creator's handle ("@demo_creator"), an email address, or a creator id. |
 | title | string | Short name for the offer. |
 | brief | string | Your note to the creator: what to say, what to avoid. |
 | url | string | The page to promote. The tracked link redirects here. |
 | deliverable | "post" \| "thread" \| "video" | What the creator publishes on X or LinkedIn. |
 | quantity | integer | How many deliverables, 1-20. Default 1. |
-| payoutUsd | number | Fixed payout. The brand's saved card is charged when the creator accepts; it's held and released once the Transformer team confirms the post. |
+| creatorAmountUsd | number | Exact USD amount the creator receives. Transformer's platform fee (20% of brandTotal) is added on top for the brand (example: $50 creator rate -> brand pays $62.50, fee $12.50). Response returns creatorAmount, brandTotal, and feeAmount. |
+| brandTotalUsd | number | Total USD amount the brand pays (example: $50 -> creator gets $40, fee $10). Provide one of creatorAmountUsd, brandTotalUsd, or legacy payoutUsd. |
+| payoutUsd | number | Legacy amount field. On the REST API, MCP, and CLI this means brandTotalUsd (what the brand pays) so existing agents are not overcharged. Prefer creatorAmountUsd or brandTotalUsd. |
 | commissionPercent | number | Optional commission on reported sales, 0-50. Default 0. |
 | expiresInDays | integer | Offer is good for (days): 3, 7, 10 or 14; default 7. |
 
@@ -89,7 +91,7 @@ Request
 curl https://transformer.gg/api/v1/offers \
   -H "Authorization: Bearer $TRANSFORMER_API_KEY" \
   -H "Content-Type: application/json" \
-  -d '{"creator":"@demo_creator","title":"Launch week","brief":"Share what you think of Acme","url":"https://acme.com/launch","deliverable":"post","quantity":1,"payoutUsd":250,"commissionPercent":10}'
+  -d '{"creator":"@demo_creator","title":"Launch week","brief":"Share what you think of Acme","url":"https://acme.com/launch","deliverable":"post","quantity":1,"creatorAmountUsd":200,"commissionPercent":10}'
 ```
 
 Response
@@ -105,6 +107,10 @@ Response
     "url": "https://acme.com/launch",
     "deliverable": "post",
     "quantity": 1,
+    "feeMode": "on_top",
+    "creatorAmount": 200,
+    "feeAmount": 50,
+    "brandTotal": 250,
     "payoutUsd": 250,
     "commissionPercent": 10,
     "brand": {
@@ -134,7 +140,7 @@ Response
 
 GET `/api/v1/offers?status=sent` brand or creator key
 
-Offers this workspace sent (brand), or that were sent to this creator or their connected social handle, newest first.
+Offers this brand sent, or that were sent to this creator or their connected social handle, newest first.
 
 | Field | Type | Description |
 | --- | --- | --- |
@@ -161,6 +167,10 @@ Response
       "url": "https://acme.com/launch",
       "deliverable": "post",
       "quantity": 1,
+      "feeMode": "on_top",
+      "creatorAmount": 200,
+      "feeAmount": 50,
+      "brandTotal": 250,
       "payoutUsd": 250,
       "commissionPercent": 10,
       "brand": {
@@ -213,6 +223,10 @@ Response
     "url": "https://acme.com/launch",
     "deliverable": "post",
     "quantity": 1,
+    "feeMode": "on_top",
+    "creatorAmount": 200,
+    "feeAmount": 50,
+    "brandTotal": 250,
     "payoutUsd": 250,
     "commissionPercent": 10,
     "brand": {
@@ -272,7 +286,9 @@ Response
     "url": "https://acme.com/launch",
     "deliverable": "post",
     "quantity": 1,
-    "payoutUsd": 250,
+    "feeMode": "on_top",
+    "creatorAmount": 200,
+    "payoutUsd": 200,
     "commissionPercent": 10,
     "brand": {
       "workspaceId": "8d0e5b7a-1f2c-4d3e-8a9b-0c1d2e3f4a5b",
@@ -324,7 +340,9 @@ Response
     "url": "https://acme.com/launch",
     "deliverable": "post",
     "quantity": 1,
-    "payoutUsd": 250,
+    "feeMode": "on_top",
+    "creatorAmount": 200,
+    "payoutUsd": 200,
     "commissionPercent": 10,
     "brand": {
       "workspaceId": "8d0e5b7a-1f2c-4d3e-8a9b-0c1d2e3f4a5b",
@@ -375,6 +393,10 @@ Response
     "url": "https://acme.com/launch",
     "deliverable": "post",
     "quantity": 1,
+    "feeMode": "on_top",
+    "creatorAmount": 200,
+    "feeAmount": 50,
+    "brandTotal": 250,
     "payoutUsd": 250,
     "commissionPercent": 10,
     "brand": {
@@ -432,7 +454,9 @@ Response
     "url": "https://acme.com/launch",
     "deliverable": "post",
     "quantity": 1,
-    "payoutUsd": 250,
+    "feeMode": "on_top",
+    "creatorAmount": 200,
+    "payoutUsd": 200,
     "commissionPercent": 10,
     "brand": {
       "workspaceId": "8d0e5b7a-1f2c-4d3e-8a9b-0c1d2e3f4a5b",

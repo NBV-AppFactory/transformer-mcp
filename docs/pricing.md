@@ -1,29 +1,29 @@
-# You set the price. Creators keep 80%.
+# Creators set their rate. Brands pay per confirmed post.
 
-Free to join and free to send offers. No subscription and no minimum offer. Transformer.gg keeps 20% of each payout; creators keep 80%.
+Free to join and free to send offers. No subscription and no minimum offer. Creators get paid the rate they set; brands pay that rate plus the Transformer.gg fee.
 
-Brands pay per offer, only when a creator accepts, and the payout is released once the Transformer team confirms the post. The same split applies to any sales commission.
+Brands pay per offer, only when a creator accepts, and payment is released once the Transformer team confirms the post.
 
 [Read the docs](https://transformer.gg/docs#quickstart)
 
-## Example: one X post at $250
+## Example: one X post at a $200 creator rate ($250 brand total)
 
-\# the brand sets the price; this one also pays 10% of tracked sales
+\# creators get paid the rate they set; the Transformer fee is added on top for brands
+
+Creator's rate (creator receives 100%) $200.00
+
+Platform fee (20% of brand total) $50.00
 
 Brand pays for one sponsored post $250.00
 
-Creator receives (80%) $200.00
-
-Platform fee (20%) $50.00
-
-each $100 sale $10 commission → $8 creator · $2 fee
+optional sales commission tracked per conversion via tf_click
 
 ## Included at no cost
 
 No subscriptions, seats or API fees, whether a person or an agent does the work.
 
 - The web dashboard for brands and creators
-- Workspace API keys, the REST API, the MCP server and the CLI
+- API keys, the REST API, the MCP server and the CLI
 - Tracked links with click and sale attribution
 - Per-creator landing pages and the conversion pixel
 - Post checks by the Transformer team
@@ -35,7 +35,7 @@ No subscriptions, seats or API fees, whether a person or an agent does the work.
 
 ### Send an offer
 
-The brand picks a suggested creator, sets the price and what to post about, and sends it. Sending is free.
+The brand picks a suggested creator, sets the offer and what to post about, and sends it. Sending is free.
 
 - 02
 
@@ -53,17 +53,17 @@ The creator writes the post on X or LinkedIn in their own words, with the tracke
 
 ### Confirmed, then paid
 
-Once the Transformer team confirms the post, the creator's 80% is credited to their balance and the 20% fee is earned. Creators withdraw from $10 ($1 payout fee for $100+, $5 under $100; or hold balance until $100).
+Once the Transformer team confirms the post, the creator's full rate is credited to their balance. Creators withdraw from $10 ($1 payout fee for $100+, $5 under $100; or hold balance until $100).
 
 ## Pricing questions
 
 How much does Transformer cost?
 
-Nothing up front: no subscription, seats or minimums. The brand sets each offer's payout; the creator receives 80% and Transformer keeps 20%. The same split applies to sales commission.
+Nothing up front: no subscription, seats or minimums. Creators get paid the rate they set, and brands pay that rate plus the 20% Transformer platform fee.
 
-What does a creator get from a $250 sponsored post?
+What does a creator get from a $200 sponsored post?
 
-$200. The brand pays $250, the creator receives 80% ($200) and the platform fee is 20% ($50). With a 10% commission on sales, each $100 sale adds $10 of commission: $8 to the creator and $2 to the platform.
+$200. Creators receive 100% of the rate they set ($200), and the brand pays $250 total including the 20% platform fee ($50).
 
 When is the brand charged, and what if the post never happens?
 
@@ -71,12 +71,12 @@ Sending an offer is free: the brand keeps a card on file, and it's charged only 
 
 How do creators get paid?
 
-When the Transformer team confirms a post, the creator's share is credited to their balance. Payouts are by PayPal or USDC (Solana or Base), from $10, usually within 3 business days of a payout request. Payout requests carry a $1 platform fee for $100 or more ($5 under $100), deducted from the payout; creators can leave their balance in their account until it reaches $100 or request a payout anytime. A W-9 or W-8BEN is needed once a year's payouts reach the tax-form threshold.
+When the Transformer team confirms a post, the creator's full rate is credited to their balance. Payouts are by PayPal or USDC (Solana or Base), from $10, usually within 3 business days of a payout request. Payout requests carry a $1 platform fee for $100 or more ($5 under $100), deducted from the payout; creators can leave their balance in their account until it reaches $100 or request a payout anytime. A W-9 or W-8BEN is needed once a year's payouts reach the tax-form threshold.
 
 Does it cost more to use the API, MCP server or CLI?
 
-No. Agents and people pay the same: the 20% fee on payouts and commission, nothing else. API keys, the MCP server and the CLI are free.
+No. Agents and people pay the same: the 20% platform fee added on top for brands, nothing else. API keys, the MCP server and the CLI are free.
 
 Who sets the price of a post?
 
-The brand, per offer. Creators can publish a rate card on their profile, and brands can offer that rate or their own; the creator accepts or declines.
+Creators publish their own rate on their profile, and brands can offer that rate or propose their own; the creator accepts, counters or declines.

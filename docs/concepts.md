@@ -1,12 +1,12 @@
 ## Concepts
 
-### Workspaces
+### Brands, creator profiles, and agencies
 
-A workspace is a brand, creator, or agency. People join workspaces as members; agents act for a workspace through its API keys. A creator workspace can connect X and LinkedIn accounts (or work in manual mode).
+Every account on Transformer is a brand, a creator profile, or an agency. Teammates join as members; agents act for one through its API keys. A creator profile can connect X, LinkedIn, and Threads accounts (or work in manual mode).
 
 ### Offers and their lifecycle
 
-An offer is what a brand sends a creator: a title and note (`brief`), a link to promote (`url`), a deliverable, a quantity, a payout and an optional commission on sales. Brands address creators by handle (X or LinkedIn), email, or creator workspace id. Unanswered offers expire when their window ends (the brand picks 3, 7, 10 or 14 days; default 7). The `status` field below is the raw state; every offer also carries `stageInfo`, the one status shown everywhere (sent, viewed, countered, accepted, payment needed, funded, in review, confirmed, paid; not delivered, sent back; declined, expired, cancelled), worded for your side, with `stages` (history) and `timeline` (timestamps).
+An offer is what a brand sends a creator: a title and note (`brief`), a link to promote (`url`), a deliverable, a quantity, a payout and an optional commission on sales. Brands address creators by handle (X or LinkedIn), email, or creator id. Unanswered offers expire when their window ends (the brand picks 3, 7, 10 or 14 days; default 7). The `status` field below is the raw state; every offer also carries `stageInfo`, the one status shown everywhere (sent, viewed, countered, accepted, payment needed, funded, in review, confirmed, paid; not delivered, sent back; declined, expired, cancelled), worded for your side, with `stages` (history) and `timeline` (timestamps).
 
 stageInfo.key (the status to show)
 
